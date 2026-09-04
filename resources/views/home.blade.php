@@ -3,5 +3,5 @@
 @section('title', 'Selamat Datang!')
 
 @section('content')
-<h1>ini landing page</h1>
+<h1>ini landing page/home</h1>
 @endsection

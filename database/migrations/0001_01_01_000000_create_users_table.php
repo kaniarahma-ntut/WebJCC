@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id('id_user');
             $table->string('username', 20);
             $table->string('email', 100);
-            $table->string('password', 8); 
-            $table->string('nama_user', 255);
+            $table->string('password', 255); 
+            $table->string('nama_user', 255)
+            ;
             $table->enum('role_user', [
                     'admin_JCC', 
                     'admin_Disporabudpar', 
