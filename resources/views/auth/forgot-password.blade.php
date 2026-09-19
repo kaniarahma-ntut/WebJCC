@@ -1,25 +1,26 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+<x-auth-shell title="{{ __('Lupa Kata Sandi') }}" subtitle="{{ __('Kami akan mengirimkan tautan reset ke email kamu.') }}">
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <p class="note">{{ __('Tidak masalah. Beri tahu kami alamat email kamu, dan kami akan mengirimkan tautan reset kata sandi agar kamu bisa memilih kata sandi baru.') }}</p>
 
     <form method="POST" action="{{ route('password.email') }}">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="field">
+            <label for="email">{{ __('Email') }}</label>
+            <div class="input-wrap">
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
+                    autocomplete="username" placeholder="nama@email.com">
+            </div>
+            @error('email')
+                <p class="error">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="btn">{{ __('Kirim Tautan Reset') }}</button>
     </form>
-</x-guest-layout>
+
+    <p class="footer">
+        {{ __('Sudah ingat kata sandimu?') }}
+        <a class="link" href="{{ route('login') }}">{{ __('Masuk') }}</a>
+    </p>
+</x-auth-shell>
