@@ -36,17 +36,16 @@ class RuanganController extends Controller
     {
         $validated = $request->validate([
             'nama_ruangan'      => 'required|string|max:200',
-            'jenis_ruangan'     => 'required|string|max:50',
             'kapasitas_ruangan' => 'required|integer',
             'lokasi_ruangan'    => 'required|string|max:255',
             'luas_ruangan'      => 'required|integer',
-            'tarif_sewa_ruangan' => 'required|integer',
+            'tarif_sewa_ruangan'=> 'required|integer',
             'deskripsi_ruangan' => 'nullable|string',
             'is_active'         => 'required|boolean',
             'gambar_ruangan'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        dd($request->file('gambar_ruangan'), $validated);
+        // dd($request->file('gambar_ruangan'), $validated);
 
         // Proses upload gambar jika ada
         if ($request->hasFile('gambar_ruangan')) {
@@ -80,7 +79,6 @@ class RuanganController extends Controller
 
         $validated = $request->validate([
             'nama_ruangan'      => 'required|string|max:200',
-            'jenis_ruangan'     => 'required|string|max:50',
             'kapasitas_ruangan' => 'required|integer',
             'lokasi_ruangan'    => 'required|string|max:255',
             'luas_ruangan'      => 'required|integer',

@@ -35,9 +35,9 @@
             <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4" id="room-grid">
             @foreach ($ruangans as $ruangan)
                 <div data-id="{{ $ruangan->id_ruangan }}" data-name="{{ $ruangan->nama_ruangan }}"
-                    class="room-card active group bg-surface-container-highest/60 border-2 border-merah-jcc rounded-[22px] p-3.5 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
+                    class="room-card group bg-cream-dark/40 border-2 border-transparent rounded-[22px] p-3.5 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
                     <div class="relative aspect-[16/10] rounded-[16px] overflow-hidden mb-3">
-                        <img src="{{ $ruangan->gambar_ruangan }}"
+                        <img src="{{ $ruangan->gambar_ruangan ? asset('storage/' . $ruangan->gambar_ruangan) : 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop' }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="{{ $ruangan->nama_ruangan }}">
                         <span class="absolute top-2.5 right-2.5 bg-emerald-500/90 text-broken-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">
                             {{ $ruangan->is_active ? 'AKTIF' : 'NONAKTIF' }}
@@ -53,9 +53,18 @@
                 @endforeach
             </div>
 
+            
+            {{-- No results — floats over the grid area --}}
+            <div id="no-results" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center">
+                <div class="w-20 h-20 mx-auto rounded-full bg-cream-dark/50 text-charcoal/30 flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined text-4xl">search_off</span>
+                </div>
+                <h3 class="font-headline font-bold text-lg text-charcoal mb-1">Ruangan tidak ditemukan</h3>
+                <p class="text-sm text-secondary">Coba kata kunci lain atau periksa ejaan Anda.</p>
+            </div>
 
             <!-- PANEL DETAIL -->
-            <div class="lg:col-span-5 sticky top-24 z-30">
+            <div id="detail-panel" class="lg:col-span-5 sticky top-24 z-30">
                 <div class="bg-white border border-charcoal/10 rounded-[32px] p-6 space-y-5 shadow-2xl relative overflow-hidden">
                     <div class="absolute -top-12 -right-12 w-32 h-32 bg-merah-jcc/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -106,8 +115,12 @@
                             <p id="detail-price" class="font-headline font-extrabold text-lg text-merah-jcc">Rp {{ number_format($ruangan->tarif_sewa_ruangan, 0, ',', '.') }}<span class="text-xs font-normal text-secondary/60">/jam</span></p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <a href="/dashboard/manajemen-ruangan/edit" class="bg-cream-dark text-charcoal hover:bg-charcoal/10 px-5 py-3 rounded-full font-headline font-bold text-xs transition-colors">Edit</a>
-                            <button type="button" id="btn-delete-room" class="bg-merah-jcc hover:bg-rose-700 text-broken-white px-5 py-3 rounded-full font-headline font-bold text-xs transition-colors shadow-lg shadow-merah-jcc/25">Hapus</button>
+                            <a href="#" id="btn-edit-room" class="bg-cream-dark text-charcoal hover:bg-charcoal/10 px-5 py-3 rounded-full font-headline font-bold text-xs transition-colors">Edit</a>
+                            <button type="button" 
+                                    id="btn-delete-room"
+                                    class="bg-merah-jcc hover:bg-rose-700 text-broken-white px-5 py-3 rounded-full font-headline font-bold text-xs transition-colors shadow-lg shadow-merah-jcc/25">
+                                Hapus
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -117,7 +130,9 @@
 
     <!-- MODAL HAPUS -->
     <div id="delete-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div id="delete-backdrop" class="absolute inset-0 bg-charcoal/60 backdrop-blur-sm"></div>
+        <div 
+            id="delete-backdrop" class="absolute inset-0 bg-charcoal/60 backdrop-blur-sm">
+        </div>
         <div class="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
             <div class="px-6 sm:px-8 py-7 sm:py-8 text-center">
                 <div class="w-16 h-16 mx-auto rounded-full bg-red-500/10 text-red-600 flex items-center justify-center mb-4">
@@ -125,14 +140,20 @@
                 </div>
                 <h3 class="font-headline font-bold text-lg text-charcoal">Hapus Ruangan?</h3>
                 <p class="mt-1.5 text-sm text-secondary leading-relaxed">Ruangan <strong id="delete-room-name">ini</strong>
-                    akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
+                akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
             </div>
-            <div class="grid grid-cols-2 gap-3 px-6 sm:px-8 pb-7 sm:pb-8">
-                <button type="button" id="delete-cancel"
-                    class="py-3 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider border border-charcoal/10 text-charcoal/60 hover:bg-charcoal/5 transition-colors">Batal</button>
-                <button type="button" id="delete-confirm"
-                    class="py-3 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider bg-red-600 text-white shadow-lg shadow-red-600/25 hover:bg-red-700 transition-colors">Ya, Hapus</button>
-            </div>
+                <div class="grid grid-cols-2 gap-3 px-6 sm:px-8 pb-7 sm:pb-8">
+                    <button type="button" id="delete-cancel"
+                        class="py-3 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider border border-charcoal/10 text-charcoal/60 hover:bg-charcoal/5 transition-colors">Batal</button>
+                    <form id="delete-form" method="POST" action="">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="w-full py-3 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider bg-red-600 text-white shadow-lg shadow-red-600/25 hover:bg-red-700 transition-colors">
+                            Ya, Hapus
+                        </button>
+                    </form>
+                </div>
         </div>
     </div>
 
@@ -146,109 +167,154 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const rooms = {
-                @foreach($ruangans as $ruangan)
-                    "{{ $ruangan->id_ruangan }}": {
-                        id: "{{ $ruangan->id_ruangan }}",
-                        status: "{{ $ruangan->is_active ? 'AKTIF' : 'NONAKTIF' }}",
-                        statusClass: "{{ $ruangan->is_active ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600' }}",
-                        title: "{{ addslashes($ruangan->nama_ruangan) }}",
-                        desc: "{{ addslashes($ruangan->deskripsi_ruangan ?? 'Tidak ada deskripsi.') }}",
-                        img: "{{ $ruangan->gambar_ruangan ? asset('storage/' . $ruangan->gambar_ruangan) : 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop' }}",
-                        capacity: "{{ $ruangan->kapasitas_ruangan }} Orang",
-                        area: "{{ addslashes($ruangan->lokasi_ruangan) }}",
-                        price: "{{ addslashes($ruangan->jenis_ruangan) }}"
-                    },
-                @endforeach
-            };
+document.addEventListener('DOMContentLoaded', () => {
+    const rooms = {
+        @foreach($ruangans as $ruangan)
+            "{{ $ruangan->id_ruangan }}": {
+                id: "{{ $ruangan->id_ruangan }}",
+                status: "{{ $ruangan->is_active ? 'AKTIF' : 'NONAKTIF' }}",
+                title: "{{ addslashes($ruangan->nama_ruangan) }}",
+                desc: "{{ addslashes($ruangan->deskripsi_ruangan ?? 'Tidak ada deskripsi.') }}",
+                img: "{{ $ruangan->gambar_ruangan ? asset('storage/' . $ruangan->gambar_ruangan) : 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop' }}",
+                capacity: "{{ $ruangan->kapasitas_ruangan }} Orang",
+                area: "{{ addslashes($ruangan->lokasi_ruangan) }}",
+                price: "{{ $ruangan->tarif_sewa_ruangan ?? 0 }}"
+            },
+        @endforeach
+    };
 
-            const cards = document.querySelectorAll('.room-card');
-            const els = {
-                status: document.getElementById('detail-status'),
-                img: document.getElementById('detail-img'),
-                title: document.getElementById('detail-title'),
-                desc: document.getElementById('detail-desc'),
-                rating: document.getElementById('detail-rating'),
-                capacity: document.getElementById('detail-capacity'),
-                area: document.getElementById('detail-area'),
-                price: document.getElementById('detail-price'),
-                facilities: document.getElementById('detail-facilities')
-            };
+    // Declare ALL variables ONCE at the top
+    const cards = document.querySelectorAll('.room-card');
+    const detailPanel = document.getElementById('detail-panel');
+    const noResults = document.getElementById('no-results');
+    const search = document.getElementById('room-search');
+    const modal = document.getElementById('delete-modal');
+    const modalName = document.getElementById('delete-room-name');
+    const deleteForm = document.getElementById('delete-form');
+    const deleteBtn = document.getElementById('btn-delete-room');
+    const cancelBtn = document.getElementById('delete-cancel');
+    const backdrop = document.getElementById('delete-backdrop');
+    const btnEditRoom = document.getElementById('btn-edit-room');
+    const editUrlBase = "{{ route('ruangan.edit', ':id') }}";
 
-            const selectCard = (card) => {
-                const data = rooms[card.dataset.id];
-                if (!data) return;
-                cards.forEach(c => { c.classList.remove('border-merah-jcc', 'bg-surface-container-highest/60', 'active', 'shadow-sm'); c.classList.add('border-transparent', 'bg-cream-dark/40'); });
-                card.classList.remove('border-transparent', 'bg-cream-dark/40');
-                card.classList.add('border-merah-jcc', 'bg-surface-container-highest/60', 'active', 'shadow-sm');
-                els.status.textContent = data.status;
-                els.status.className = `text-[10px] font-bold px-2.5 py-0.5 rounded-full ${data.status === 'AKTIF' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`;
-                els.img.src = data.img;
-                els.title.textContent = data.title;
-                els.desc.textContent = data.desc;
-                els.rating.innerHTML = `<span class="material-symbols-outlined text-xs fill-1 text-amber-500">star</span> ${data.rating}`;
-                els.capacity.textContent = data.capacity;
-                els.area.textContent = data.area;
-                els.price.innerHTML = `${data.price}<span class="text-xs font-normal text-secondary/60">${data.unit}</span>`;
-                els.facilities.innerHTML = data.facilities.map(f => `<span class="bg-cream-dark/50 text-charcoal/90 text-[11px] px-3 py-1 rounded-full flex items-center gap-1.5"><span class="material-symbols-outlined text-xs">${f.icon}</span> ${f.text}</span>`).join('');
-            };
+    const els = {
+        status: document.getElementById('detail-status'),
+        img: document.getElementById('detail-img'),
+        title: document.getElementById('detail-title'),
+        desc: document.getElementById('detail-desc'),
+        capacity: document.getElementById('detail-capacity'),
+        area: document.getElementById('detail-area'),
+        price: document.getElementById('detail-price')
+    };
 
-            cards.forEach(card => card.addEventListener('click', () => selectCard(card)));
-            selectCard(cards[0]);
+    // === EMPTY STATE ===
+    if (cards.length === 0) {
+        if (noResults) {
+            noResults.querySelector('h3').textContent = 'Belum ada ruangan terdaftar';
+            noResults.querySelector('p').textContent = 'Mulai dengan menambahkan ruangan baru.';
+            noResults.classList.remove('hidden');
+        }
+        if (detailPanel) detailPanel.style.display = 'none';
+        return;
+    }
 
-            const search = document.getElementById('room-search');
-            const noResults = document.getElementById('no-results');
-            search.addEventListener('input', () => {
-                const q = search.value.toLowerCase().trim();
-                let visible = 0;
-                cards.forEach(card => {
-                    const match = card.dataset.name.toLowerCase().includes(q);
-                    card.style.display = match ? 'block' : 'none';
-                    if (match) visible++;
-                });
-                noResults.classList.toggle('hidden', visible > 0);
-                if (visible > 0) selectCard(document.querySelector('.room-card:not([style*="none"])'));
-            });
+    // === SELECT A ROOM CARD ===
+    const selectCard = (card) => {
+        
+    
+    if (!card) return;
+        const data = rooms[card.dataset.id];
+        if (!data) return;
 
-            const modal = document.getElementById('delete-modal');
-            const modalName = document.getElementById('delete-room-name');
-            const showToastMsg = (msg) => {
-                const t = document.getElementById('toast');
-                document.getElementById('toast-text').textContent = msg;
-                t.classList.remove('hidden');
-                t.classList.add('flex');
-                setTimeout(() => { t.classList.add('hidden'); t.classList.remove('flex'); }, 2500);
-            };
-
-            document.getElementById('btn-delete-room').addEventListener('click', () => {
-                const active = document.querySelector('.room-card.active');
-                modalName.textContent = active.dataset.name;
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            });
-            document.getElementById('delete-cancel').addEventListener('click', () => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            });
-            document.getElementById('delete-backdrop').addEventListener('click', () => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            });
-            document.getElementById('delete-confirm').addEventListener('click', () => {
-                const active = document.querySelector('.room-card.active');
-                active.remove();
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                showToastMsg('Ruangan ' + active.dataset.name + ' berhasil dihapus');
-                const remaining = document.querySelector('.room-card');
-                if (remaining) selectCard(remaining);
-                else {
-                    noResults.textContent = '';
-                    noResults.querySelector('p').textContent = 'Belum ada ruangan terdaftar';
-                    noResults.classList.remove('hidden');
-                }
-            });
+        cards.forEach(c => {
+            c.classList.remove('border-merah-jcc', 'bg-surface-container-highest/60', 'active', 'shadow-sm');
+            c.classList.add('border-transparent', 'bg-cream-dark/40');
         });
-    </script>
+        card.classList.remove('border-transparent', 'bg-cream-dark/40');
+        card.classList.add('border-merah-jcc', 'bg-surface-container-highest/60', 'active', 'shadow-sm');
+
+        if (els.status) {
+            els.status.textContent = data.status;
+            els.status.className = `text-[10px] font-bold px-2.5 py-0.5 rounded-full ${data.status === 'AKTIF' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`;
+        }
+        if (els.img) els.img.src = data.img;
+        if (els.title) els.title.textContent = data.title;
+        if (els.desc) els.desc.textContent = data.desc;
+        if (els.capacity) els.capacity.textContent = data.capacity;
+        if (els.area) els.area.textContent = data.area;
+        if (els.price) els.price.textContent = 'Rp ' + Number(data.price).toLocaleString('id-ID');
+        if (btnEditRoom) {
+            btnEditRoom.href = editUrlBase.replace(':id', data.id);
+        }
+    };
+
+    cards.forEach(card => card.addEventListener('click', () => selectCard(card)));
+    selectCard(cards[0]);
+
+    // === SEARCH ===
+    if (search) {
+        search.addEventListener('input', () => {
+            const q = search.value.toLowerCase().trim();
+            let visible = 0;
+            cards.forEach(card => {
+                const match = card.dataset.name.toLowerCase().includes(q);
+                card.style.display = match ? 'block' : 'none';
+                if (match) visible++;
+            });
+            
+            if (noResults) noResults.classList.toggle('hidden', visible > 0);
+            if (detailPanel) detailPanel.style.display = visible > 0 ? 'block' : 'none';
+            
+            if (visible > 0) {
+                const firstVisible = document.querySelector('.room-card:not([style*="none"])');
+                selectCard(firstVisible);
+            }
+        });
+    }
+
+    // === TOAST ===
+    const showToast = (msg) => {
+        const t = document.getElementById('toast');
+        if (!t) return;
+        document.getElementById('toast-text').textContent = msg;
+        t.classList.remove('hidden');
+        t.classList.add('flex');
+        setTimeout(() => {
+            t.classList.add('hidden');
+            t.classList.remove('flex');
+        }, 2500);
+    };
+
+    // === DELETE MODAL ===
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            const active = document.querySelector('.room-card.active');
+            if (!active) {
+                showToast('Pilih ruangan terlebih dahulu');
+                return;
+            }
+
+            const id = active.dataset.id;
+            deleteForm.action = `/dashboard/manajemen-ruangan/${id}`;
+            modalName.textContent = active.dataset.name;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+    }
+});
+</script>
 @endsection

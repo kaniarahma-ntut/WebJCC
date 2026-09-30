@@ -22,6 +22,14 @@ class UserSeeder extends Seeder
                 'role_user' => 'admin_JCC',
                 'website' => null
             ],
+            [
+                'username' => 'user1',
+                'email' => 'user1@gmail.com',
+                'password' => bcrypt('user123'),
+                'nama_user' => 'user 1',
+                'role_user' => 'user',
+                'website' => null
+            ],
         ]);
     }
 }

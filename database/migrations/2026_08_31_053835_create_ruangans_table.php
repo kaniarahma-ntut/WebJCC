@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nama_ruangan', 200);
             $table->integer('kapasitas_ruangan');
             $table->integer('luas_ruangan');
-            $table->integer('tarif_sewa_ruangan');
+            $table->integer('tarif_sewa_ruangan')->default(0);
             $table->text('deskripsi_ruangan')->nullable(); //
             $table->string('gambar_ruangan', 255)->nullable();
             $table->string('lokasi_ruangan', 255);

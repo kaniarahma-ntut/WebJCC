@@ -17,6 +17,7 @@ class Ruangan extends Model
         'nama_ruangan',
         'kapasitas_ruangan',
         'deskripsi_ruangan',
+        'tarif_sewa_ruangan',
         'gambar_ruangan',
         'lokasi_ruangan',
         'luas_ruangan',
