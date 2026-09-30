@@ -4,6 +4,9 @@ use App\Http\Controllers\ProfileController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RuanganController;
+
+
 
 // Route::get('/', function () {
 //     return view('home');
@@ -11,12 +14,12 @@ use Illuminate\Support\Facades\Route;
 
 // });
 
-Route::get('/', function () {
-    return view('home');
-});
 // Route::get('/', function () {
 //     return view('home');
-// })->middleware(['auth', 'verified'])->name('home');
+// });
+Route::get('/', function () {
+    return view('home');
+})->middleware(['auth', 'verified'])->name('home');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -72,15 +75,16 @@ Route::middleware('auth')->group(function () {
 
         return back()->with('success', 'Profil berhasil diperbarui.');
     })->name('profil.update');
-    Route::get('/dashboard/manajemen-ruangan', function () {
-        return view('dashboard.manajemen-ruangan.index');
-    })->name('manajemen-ruangan');
-    Route::get('/dashboard/manajemen-ruangan/tambah', function () {
-        return view('dashboard.manajemen-ruangan.create');
-    })->name('manajemen-ruangan.create');
-    Route::get('/dashboard/manajemen-ruangan/edit', function () {
-        return view('dashboard.manajemen-ruangan.edit');
-    })->name('manajemen-ruangan.edit');
+
+    Route::middleware('auth')->prefix('dashboard')->group(function () {
+        Route::get('/manajemen-ruangan',          [RuanganController::class, 'index'])  ->name('ruangan.index');
+        Route::get('/manajemen-ruangan/tambah',   [RuanganController::class, 'create']) ->name('ruangan.create');
+        Route::post('/manajemen-ruangan',         [RuanganController::class, 'store'])  ->name('ruangan.store');
+        Route::get('/manajemen-ruangan/edit/{id_ruangan}', [RuanganController::class, 'edit'])   ->name('ruangan.edit');
+        Route::put('/manajemen-ruangan/{id_ruangan}',      [RuanganController::class, 'update']) ->name('ruangan.update');
+        Route::delete('/manajemen-ruangan/{id_ruangan}',   [RuanganController::class, 'destroy'])->name('ruangan.destroy');
+    });
+
 
     Route::get('/dashboard/manajemen-pengguna', function () {
         $users = User::orderBy('id_user')->get();

@@ -16,10 +16,11 @@ return new class extends Migration
             $table->string('nama_barang', 255);
             $table->string('jenis_barang', 100);
             $table->integer('harga_sewa');
-            $table->binary('qr_barang')->nullable();
+            $table->string('gambar_barang', 255)->nullable();
+            $table->string('qr_barang', 255)->nullable();
             $table->text('deskripsi_barang')->nullable();
             $table->string('keywords_barang', 50)->nullable();
-            $table->char('is_active', 1)->default('1');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('barangs');
+        Schema::dropIfExists('barang');
     }
 };

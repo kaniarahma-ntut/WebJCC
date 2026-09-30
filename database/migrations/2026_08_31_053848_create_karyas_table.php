@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('judul_karya', 150);
             $table->string('kategori_karya', 50);
             $table->text('deskripsi_karya')->nullable();
-            $table->binary('foto_karya_1')->nullable();
-            $table->binary('foto_karya_2')->nullable();
-            $table->binary('foto_karya_3')->nullable();
+            $table->string('foto_karya_1', 255)->nullable();
+            $table->string('foto_karya_2', 255)->nullable();
+            $table->string('foto_karya_3', 255)->nullable();
             $table->text('embed_video')->nullable();
             $table->integer('views_count')->default(0);
             
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('karyas');
+        Schema::dropIfExists('karya');
     }
 };

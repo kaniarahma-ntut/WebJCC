@@ -33,102 +33,26 @@
 
             <!-- GRID RUANGAN -->
             <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4" id="room-grid">
-
-                <div data-id="1" data-name="Ruang Kolaborasi A"
+            @foreach ($ruangans as $ruangan)
+                <div data-id="{{ $ruangan->id_ruangan }}" data-name="{{ $ruangan->nama_ruangan }}"
                     class="room-card active group bg-surface-container-highest/60 border-2 border-merah-jcc rounded-[22px] p-3.5 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
                     <div class="relative aspect-[16/10] rounded-[16px] overflow-hidden mb-3">
-                        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=600&auto=format&fit=crop"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Ruang Kolaborasi A">
-                        <span class="absolute top-2.5 right-2.5 bg-emerald-500/90 text-broken-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Aktif</span>
+                        <img src="{{ $ruangan->gambar_ruangan }}"
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="{{ $ruangan->nama_ruangan }}">
+                        <span class="absolute top-2.5 right-2.5 bg-emerald-500/90 text-broken-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">
+                            {{ $ruangan->is_active ? 'AKTIF' : 'NONAKTIF' }}
+                        </span>
                     </div>
-                    <h3 class="font-headline font-bold text-base text-charcoal group-hover:text-merah-jcc transition-colors truncate">Ruang Kolaborasi A</h3>
+                    <h3 class="font-headline font-bold text-base text-charcoal group-hover:text-merah-jcc transition-colors truncate">{{ $ruangan->nama_ruangan }}</h3>
                     <div class="flex items-center gap-3 text-[11px] text-secondary my-1.5">
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">group</span> 8-12 Orang</span>
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">square_foot</span> 24 m²</span>
+                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">group</span> {{ $ruangan->kapasitas_ruangan }} Orang</span>
+                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">square_foot</span> {{ $ruangan->luas_ruangan }} m²</span>
                     </div>
-                    <p class="font-headline font-extrabold text-merah-jcc text-sm mt-1">Rp 150k <span class="text-[11px] text-secondary font-normal">/jam</span></p>
+                    <p class="font-headline font-extrabold text-merah-jcc text-sm mt-1">Rp {{ number_format($ruangan->tarif_sewa_ruangan, 0, ',', '.') }} <span class="text-[11px] text-secondary font-normal">/jam</span></p>
                 </div>
-
-                <div data-id="2" data-name="Meeting Room Glass"
-                    class="room-card group bg-cream-dark/40 border-2 border-transparent hover:border-charcoal/10 rounded-[22px] p-3.5 cursor-pointer transition-all duration-300 hover:shadow-md">
-                    <div class="relative aspect-[16/10] rounded-[16px] overflow-hidden mb-3">
-                        <img src="https://images.unsplash.com/photo-1517502884422-41eaead166d4?q=80&w=600&auto=format&fit=crop"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Meeting Room Glass">
-                        <span class="absolute top-2.5 right-2.5 bg-emerald-500/90 text-broken-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Aktif</span>
-                    </div>
-                    <h3 class="font-headline font-bold text-base text-charcoal group-hover:text-merah-jcc transition-colors truncate">Meeting Room Glass</h3>
-                    <div class="flex items-center gap-3 text-[11px] text-secondary my-1.5">
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">group</span> 100+ Orang</span>
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">square_foot</span> 150 m²</span>
-                    </div>
-                    <p class="font-headline font-extrabold text-merah-jcc text-sm mt-1">Rp 250k <span class="text-[11px] text-secondary font-normal">/jam</span></p>
-                </div>
-
-                <div data-id="3" data-name="Aula Kreatif Utama"
-                    class="room-card group bg-cream-dark/40 border-2 border-transparent hover:border-charcoal/10 rounded-[22px] p-3.5 cursor-pointer transition-all duration-300 hover:shadow-md">
-                    <div class="relative aspect-[16/10] rounded-[16px] overflow-hidden mb-3">
-                        <img src="https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?q=80&w=600&auto=format&fit=crop"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Aula Kreatif Utama">
-                        <span class="absolute top-2.5 right-2.5 bg-emerald-500/90 text-broken-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Aktif</span>
-                    </div>
-                    <h3 class="font-headline font-bold text-base text-charcoal group-hover:text-merah-jcc transition-colors truncate">Aula Kreatif Utama</h3>
-                    <div class="flex items-center gap-3 text-[11px] text-secondary my-1.5">
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">group</span> 100+ Orang</span>
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">square_foot</span> 150 m²</span>
-                    </div>
-                    <p class="font-headline font-extrabold text-merah-jcc text-sm mt-1">Rp 1.5M <span class="text-[11px] text-secondary font-normal">/hari</span></p>
-                </div>
-
-                <div data-id="4" data-name="Private Desk Space"
-                    class="room-card group bg-cream-dark/40 border-2 border-transparent hover:border-charcoal/10 rounded-[22px] p-3.5 cursor-pointer transition-all duration-300 hover:shadow-md">
-                    <div class="relative aspect-[16/10] rounded-[16px] overflow-hidden mb-3">
-                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=600&auto=format&fit=crop"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Private Desk Space">
-                        <span class="absolute top-2.5 right-2.5 bg-emerald-500/90 text-broken-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Aktif</span>
-                    </div>
-                    <h3 class="font-headline font-bold text-base text-charcoal group-hover:text-merah-jcc transition-colors truncate">Private Desk Space</h3>
-                    <div class="flex items-center gap-3 text-[11px] text-secondary my-1.5">
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">person</span> 1 Orang</span>
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">wifi</span> High Speed</span>
-                    </div>
-                    <p class="font-headline font-extrabold text-merah-jcc text-sm mt-1">Rp 35k <span class="text-[11px] text-secondary font-normal">/jam</span></p>
-                </div>
-
-                <div data-id="5" data-name="Studio Foto & Visual"
-                    class="room-card group bg-cream-dark/40 border-2 border-transparent hover:border-charcoal/10 rounded-[22px] p-3.5 cursor-pointer transition-all duration-300 hover:shadow-md">
-                    <div class="relative aspect-[16/10] rounded-[16px] overflow-hidden mb-3">
-                        <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=600&auto=format&fit=crop"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Studio Foto & Visual">
-                        <span class="absolute top-2.5 right-2.5 bg-emerald-500/90 text-broken-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Aktif</span>
-                    </div>
-                    <h3 class="font-headline font-bold text-base text-charcoal group-hover:text-merah-jcc transition-colors truncate">Studio Foto & Visual</h3>
-                    <div class="flex items-center gap-3 text-[11px] text-secondary my-1.5">
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">group</span> 5-10 Orang</span>
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">light</span> Lighting Set</span>
-                    </div>
-                    <p class="font-headline font-extrabold text-merah-jcc text-sm mt-1">Rp 200k <span class="text-[11px] text-secondary font-normal">/jam</span></p>
-                </div>
-
-                <div data-id="6" data-name="Podcast Studio"
-                    class="room-card group bg-cream-dark/40 border-2 border-transparent hover:border-charcoal/10 rounded-[22px] p-3.5 cursor-pointer transition-all duration-300 hover:shadow-md">
-                    <div class="relative aspect-[16/10] rounded-[16px] overflow-hidden mb-3">
-                        <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=600&auto=format&fit=crop"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Podcast Studio">
-                        <span class="absolute top-2.5 right-2.5 bg-amber-500/90 text-broken-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Nonaktif</span>
-                    </div>
-                    <h3 class="font-headline font-bold text-base text-charcoal group-hover:text-merah-jcc transition-colors truncate">Podcast Studio</h3>
-                    <div class="flex items-center gap-3 text-[11px] text-secondary my-1.5">
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">mic</span> 4 Mic Set</span>
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">videocam</span> 4K Cam</span>
-                    </div>
-                    <p class="font-headline font-extrabold text-merah-jcc text-sm mt-1">Rp 100k <span class="text-[11px] text-secondary font-normal">/jam</span></p>
-                </div>
-
-                <div id="no-results" class="hidden lg:col-span-2 col-span-full text-center py-10">
-                    <span class="material-symbols-outlined text-4xl text-charcoal/20 block mb-2">search_off</span>
-                    <p class="font-headline font-bold text-sm text-charcoal/60">Ruangan tidak ditemukan</p>
-                </div>
+                @endforeach
             </div>
+
 
             <!-- PANEL DETAIL -->
             <div class="lg:col-span-5 sticky top-24 z-30">
@@ -137,24 +61,20 @@
 
                     <div class="flex items-center justify-between pb-3 border-b border-charcoal/10">
                         <span class="text-[11px] font-bold tracking-widest text-merah-jcc uppercase">Detail Ruangan</span>
-                        <span id="detail-status" class="bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">AKTIF</span>
+                        <span id="detail-status" class="bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">{{ $ruangan->is_active ? 'AKTIF' : 'NONAKTIF' }}</span>
                     </div>
 
                     <div class="relative aspect-[16/9] rounded-[20px] overflow-hidden border border-charcoal/10 shadow-inner">
-                        <img id="detail-img" src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop"
+                        <img id="detail-img" src='{{ $ruangan->gambar_ruangan }}'
                             class="w-full h-full object-cover transition-all duration-500" alt="Detail Ruangan">
                     </div>
 
                     <div>
                         <div class="flex items-start justify-between gap-2 mb-1">
-                            <h2 id="detail-title" class="font-headline text-xl font-bold text-charcoal">Ruang Kolaborasi A</h2>
-                            <span id="detail-rating" class="bg-merah-jcc/10 text-merah-jcc text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shrink-0">
-                                <span class="material-symbols-outlined text-xs fill-1 text-amber-500">star</span> 4.9
-                            </span>
+                            <h2 id="detail-title" class="font-headline text-xl font-bold text-charcoal">{{ $ruangan->nama_ruangan }}</h2>
                         </div>
                         <p id="detail-desc" class="font-body text-secondary text-xs leading-relaxed">
-                            Ruang kerja komunal yang dirancang untuk mendukung produktivitas dan kolaborasi spontan.
-                            Dilengkapi dengan pencahayaan alami yang optimal.
+                            {{ $ruangan->deskripsi_ruangan ?? 'Tidak ada deskripsi.' }}
                         </p>
                     </div>
 
@@ -165,7 +85,7 @@
                             </div>
                             <div class="overflow-hidden">
                                 <p class="text-[9px] uppercase font-bold text-secondary/60 tracking-wider">Kapasitas</p>
-                                <p id="detail-capacity" class="font-headline font-bold text-xs text-charcoal truncate">8-12 Orang</p>
+                                <p id="detail-capacity" class="font-headline font-bold text-xs text-charcoal truncate">{{ $ruangan->kapasitas_ruangan }} Orang</p>
                             </div>
                         </div>
                         <div class="bg-cream-dark/50 border border-charcoal/10 p-3 rounded-[16px] flex items-center gap-2.5">
@@ -174,20 +94,16 @@
                             </div>
                             <div class="overflow-hidden">
                                 <p class="text-[9px] uppercase font-bold text-secondary/60 tracking-wider">Spesifikasi</p>
-                                <p id="detail-area" class="font-headline font-bold text-xs text-charcoal truncate">24 m²</p>
+                                <p id="detail-area" class="font-headline font-bold text-xs text-charcoal truncate">{{ $ruangan->luas_ruangan }} m²</p>
                             </div>
                         </div>
                     </div>
 
-                    <div>
-                        <h4 class="font-headline font-bold text-xs text-charcoal/90 mb-2">Fasilitas Termasuk</h4>
-                        <div class="flex flex-wrap gap-1.5" id="detail-facilities"></div>
-                    </div>
 
                     <div class="pt-3 border-t border-charcoal/10 flex items-center justify-between gap-3">
                         <div>
                             <p class="text-[9px] font-bold text-secondary/60 uppercase tracking-wider">TARIF SEWA</p>
-                            <p id="detail-price" class="font-headline font-extrabold text-lg text-merah-jcc">Rp 150.000<span class="text-xs font-normal text-secondary/60">/jam</span></p>
+                            <p id="detail-price" class="font-headline font-extrabold text-lg text-merah-jcc">Rp {{ number_format($ruangan->tarif_sewa_ruangan, 0, ',', '.') }}<span class="text-xs font-normal text-secondary/60">/jam</span></p>
                         </div>
                         <div class="flex items-center gap-2">
                             <a href="/dashboard/manajemen-ruangan/edit" class="bg-cream-dark text-charcoal hover:bg-charcoal/10 px-5 py-3 rounded-full font-headline font-bold text-xs transition-colors">Edit</a>
@@ -232,12 +148,19 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const rooms = {
-                "1": { status: "AKTIF", title: "Ruang Kolaborasi A", desc: "Ruang kerja komunal yang dirancang untuk mendukung produktivitas dan kolaborasi spontan. Dilengkapi dengan pencahayaan alami yang optimal.", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop", rating: "4.9 (120 Ulasan)", capacity: "8-12 Orang", area: "24 m²", price: "Rp 150.000", unit: "/jam", facilities: [{ icon: "wifi", text: "WiFi 100Mbps" }, { icon: "tv", text: "Smart TV 55\"" }, { icon: "local_cafe", text: "Coffee" }, { icon: "draw", text: "Whiteboard" }] },
-                "2": { status: "AKTIF", title: "Meeting Room Glass", desc: "Ruang rapat privat dengan dinding kaca kedap suara, cocok untuk presentasi klien penting dan diskusi tim skala besar.", img: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?q=80&w=800&auto=format&fit=crop", rating: "4.8 (85 Ulasan)", capacity: "100+ Orang", area: "150 m²", price: "Rp 250.000", unit: "/jam", facilities: [{ icon: "wifi", text: "WiFi Dedicated" }, { icon: "co_present", text: "Proyektor 4K" }, { icon: "mic", text: "Sound System" }] },
-                "3": { status: "AKTIF", title: "Aula Kreatif Utama", desc: "Ruang serbaguna berkapasitas besar untuk pameran, workshop, talkshow, hingga pertunjukan seni lokal Jember.", img: "https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?q=80&w=800&auto=format&fit=crop", rating: "5.0 (200 Ulasan)", capacity: "100+ Orang", area: "150 m²", price: "Rp 1.500.000", unit: "/hari", facilities: [{ icon: "stage", text: "Panggung Utama" }, { icon: "light", text: "Lighting Set" }, { icon: "chair", text: "100+ Kursi" }] },
-                "4": { status: "AKTIF", title: "Private Desk Space", desc: "Spot kerja terisolasi yang tenang untuk kebutuhan fokus individu dengan colokan listrik pribadi dan koneksi internet stabil.", img: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop", rating: "4.7 (32 Ulasan)", capacity: "1 Orang", area: "Personal Spot", price: "Rp 35.000", unit: "/jam", facilities: [{ icon: "wifi", text: "WiFi LAN/5G" }, { icon: "power", text: "Port Listrik" }, { icon: "local_cafe", text: "Free Tea" }] },
-                "5": { status: "AKTIF", title: "Studio Foto & Visual", desc: "Studio fotografi profesional lengkap dengan pilihan backdrop warna, lampu softbox, dan ruang ganti.", img: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop", rating: "4.9 (60 Ulasan)", capacity: "5-10 Orang", area: "40 m² Studio", price: "Rp 200.000", unit: "/jam", facilities: [{ icon: "light", text: "Lighting 3 Point" }, { icon: "checkroom", text: "Ruang Ganti" }, { icon: "iron", text: "Steamer" }] },
-                "6": { status: "NONAKTIF", title: "Podcast Studio", desc: "Studio rekaman profesional dengan peredam suara tingkat tinggi, perlengkapan audio terkalibrasi, dan pencahayaan studio.", img: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800&auto=format&fit=crop", rating: "4.9 (45 Ulasan)", capacity: "4 Orang", area: "15 m² Studio", price: "Rp 100.000", unit: "/jam", facilities: [{ icon: "mic", text: "4 Mic Shure" }, { icon: "videocam", text: "4K Cam Set" }, { icon: "headphones", text: "Audio Mixer" }] }
+                @foreach($ruangans as $ruangan)
+                    "{{ $ruangan->id_ruangan }}": {
+                        id: "{{ $ruangan->id_ruangan }}",
+                        status: "{{ $ruangan->is_active ? 'AKTIF' : 'NONAKTIF' }}",
+                        statusClass: "{{ $ruangan->is_active ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600' }}",
+                        title: "{{ addslashes($ruangan->nama_ruangan) }}",
+                        desc: "{{ addslashes($ruangan->deskripsi_ruangan ?? 'Tidak ada deskripsi.') }}",
+                        img: "{{ $ruangan->gambar_ruangan ? asset('storage/' . $ruangan->gambar_ruangan) : 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop' }}",
+                        capacity: "{{ $ruangan->kapasitas_ruangan }} Orang",
+                        area: "{{ addslashes($ruangan->lokasi_ruangan) }}",
+                        price: "{{ addslashes($ruangan->jenis_ruangan) }}"
+                    },
+                @endforeach
             };
 
             const cards = document.querySelectorAll('.room-card');

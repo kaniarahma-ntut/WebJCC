@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('ruangan', function (Blueprint $table) {
             $table->id('id_ruangan');
             $table->string('nama_ruangan', 200);
-            $table->string('jenis_ruangan', 50);
             $table->integer('kapasitas_ruangan');
-            $table->text('deskripsi_ruangan')->nullable(); //CLOB
-            $table->binary('gambar_ruangan')->nullable();  //BLOB
+            $table->integer('luas_ruangan');
+            $table->integer('tarif_sewa_ruangan');
+            $table->text('deskripsi_ruangan')->nullable(); //
+            $table->string('gambar_ruangan', 255)->nullable();
             $table->string('lokasi_ruangan', 255);
-            $table->char('is_active', 1)->default('1');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ruangans');
+        Schema::dropIfExists('ruangan');
     }
 };
