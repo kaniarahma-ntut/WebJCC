@@ -24,6 +24,26 @@ class BarangSeeder extends Seeder
                 'keywords_barang' => 'kamera',
                 'is_active' => true
             ],
+            [
+                'nama_barang' => 'Canon EOS 5D Mark IV B',
+                'jenis_barang' => 'Kamera',
+                'deskripsi_barang' => 'Kamera digital dengan lensa yang dapat dilepas',
+                'harga_sewa' => 120000,
+                'gambar_barang' => null,
+                'qr_barang' => null,
+                'keywords_barang' => 'kamera',
+                'is_active' => true
+            ],
+            [
+                'nama_barang' => 'Wireless Speaker JBL Flip 5',
+                'jenis_barang' => 'Speaker',
+                'deskripsi_barang' => 'Speaker nirkabel dengan kualitas suara yang tinggi',
+                'harga_sewa' => 120000,
+                'gambar_barang' => null,
+                'qr_barang' => null,
+                'keywords_barang' => 'speaker',
+                'is_active' => true
+            ],
         ]);
     }
 }

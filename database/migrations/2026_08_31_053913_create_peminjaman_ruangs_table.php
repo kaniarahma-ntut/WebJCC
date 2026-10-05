@@ -28,6 +28,12 @@ return new class extends Migration
                     'approved', 
                     'declined'
                 ])->default('pending');
+            $table->enum('status_pembayaran', [
+                    'pending', 
+                    'completed', 
+                    'failed'
+                ])->default('pending');    
+            $table->integer('total_harga');
             $table->unsignedBigInteger('user_id_user');
             $table->unsignedBigInteger('ruangan_id_ruangan');
             $table->foreign('user_id_user')->references('id_user')->on('user');

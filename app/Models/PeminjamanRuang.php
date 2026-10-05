@@ -21,6 +21,8 @@ class PeminjamanRuang extends Model
         'start_time',
         'end_time',
         'status_peminjaman',
+        'status_pembayaran',
+        'total_harga',
         'user_id_user',
         'ruangan_id_ruangan',
     ];
@@ -43,8 +45,8 @@ class PeminjamanRuang extends Model
         return $this->belongsTo(Ruangan::class, 'ruangan_id_ruangan', 'id_ruangan');
     }
 
-    // Relasi ke Detail Barang (Barang apa saja yang dipinjam untuk acara ini)
-    public function detailBarang()
+    // Relasi ke Detail Peminjaman Barang (Barang apa saja yang dipinjam untuk acara ini)
+    public function detailPeminjamanBarang()
     {
         return $this->hasMany(DetailPeminjamanBarang::class, 'id_peminjaman_ruangan', 'id_peminjaman_ruangan');
     }

@@ -5,7 +5,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RuanganController;
-
+use App\Http\Controllers\PeminjamanController;
 
 
 // Route::get('/', function () {
@@ -206,6 +206,7 @@ Route::middleware('auth')->group(function () {
         $event = collect(dummy_event())->firstWhere('id', (int) $id);
         return view('dashboard.manajemen-event.edit', compact('event'));
     })->name('manajemen-event.edit');
+    
     Route::put('/dashboard/manajemen-event/{id}', function (Illuminate\Http\Request $request, $id) {
         $request->validate([
             'judul' => 'required|max:255',
@@ -218,29 +219,33 @@ Route::middleware('auth')->group(function () {
         ]);
         return redirect('/dashboard/manajemen-event')->with('success', 'Event berhasil diperbarui.');
     })->name('manajemen-event.update');
+    
     Route::delete('/dashboard/manajemen-event/{id}', function ($id) {
         return redirect('/dashboard/manajemen-event')->with('success', 'Event berhasil dihapus.');
-    })->name('manajemen-event.destroy');
-    Route::get('/dashboard/riwayat-booking', function () {
-        return view('dashboard.riwayat-booking.index');
-    })->name('riwayat-booking');
-    Route::get('/dashboard/riwayat-booking/detail', function () {
-        return view('dashboard.riwayat-booking.detail');
-    })->name('riwayat-booking.detail');
+        })->name('manajemen-event.destroy');
+    
+    Route::get('/konfirmasi/{id_ruangan}', [PeminjamanController::class, 'create'])->name('konfirmasi');
+    
+    Route::post('/peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');
+    
+    Route::get('/dashboard/riwayat-booking', [PeminjamanController::class, 'riwayat'])
+        ->name('riwayat-booking.index');
+
+    Route::get('/dashboard/riwayat-booking/{id}', [PeminjamanController::class, 'detail'])
+        ->name('riwayat-booking.detail');
+
     Route::get('/dashboard/terima-pemesanan', function () {
         return view('dashboard.terima-pemesanan.index');
     })->name('terima-pemesanan');
+
     Route::get('/dashboard/terima-pemesanan/detail', function () {
         return view('dashboard.terima-pemesanan.detail');
     })->name('terima-pemesanan.detail');
 });
 
-Route::get('/jelajahi', function () {
-    return view('jelajahi');
-});
-Route::get('/konfirmasi', function () {
-    return view('konfirmasi');
-});
+Route::get('/jelajahi', [PeminjamanController::class, 'index'])->name('jelajahi');
+
+
 Route::get('/tentang', function () {
     return view('tentang');
 });

@@ -8,18 +8,19 @@ const menuBtn = document.getElementById("menu-btn");
 const mobileMenu = document.getElementById("mobile-menu");
 const menuIcon = document.getElementById("menu-icon");
 
-menuBtn.addEventListener("click", () => {
-    // Toggle kelas 'hidden' dan 'flex'
-    mobileMenu.classList.toggle("hidden");
-    mobileMenu.classList.toggle("flex");
+if (menuBtn && mobileMenu && menuIcon) {
+    menuBtn.addEventListener("click", () => {
+        mobileMenu.classList.toggle("hidden");
+        mobileMenu.classList.toggle("flex");
 
-    // Ubah ikon dari 'menu' menjadi 'close' (X) saat terbuka
-    if (mobileMenu.classList.contains("hidden")) {
-        menuIcon.textContent = "menu";
-    } else {
-        menuIcon.textContent = "close";
-    }
-});
+        if (mobileMenu.classList.contains("hidden")) {
+            menuIcon.textContent = "menu";
+        } else {
+            menuIcon.textContent = "close";
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const carousel = document.getElementById("event-carousel");
     const btnPrev = document.getElementById("btn-prev");
@@ -107,48 +108,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextBtn = document.getElementById("creator-next");
     const cards = document.querySelectorAll(".creator-card");
 
-    if (prevBtn && nextBtn && slider) {
-        nextBtn.addEventListener("click", () => {
-            slider.scrollBy({
-                left: 240,
-                behavior: "smooth",
-            });
-        });
-        prevBtn.addEventListener("click", () => {
-            slider.scrollBy({
-                left: -240,
-                behavior: "smooth",
-            });
-        });
-    }
-
-    let isScrolling;
-    slider.addEventListener("scroll", () => {
-        cards.forEach((card) => {
-            const badge = card.querySelector(".creator-badge");
-            const overlay = card.querySelector(".creator-overlay");
-            if (badge) {
-                badge.style.opacity = "0";
-                badge.style.transform = "translateY(15px)";
-            }
-            if (overlay) {
-                overlay.style.opacity = "0";
-            }
-        });
-
-        clearTimeout(isScrolling);
-        isScrolling = setTimeout(() => {
+    if (slider) {
+        let isScrolling;
+        slider.addEventListener("scroll", () => {
             cards.forEach((card) => {
                 const badge = card.querySelector(".creator-badge");
                 const overlay = card.querySelector(".creator-overlay");
                 if (badge) {
-                    badge.style.opacity = "1";
-                    badge.style.transform = "translateY(0)";
+                    badge.style.opacity = "0";
+                    badge.style.transform = "translateY(15px)";
                 }
                 if (overlay) {
-                    overlay.style.opacity = "1";
+                    overlay.style.opacity = "0";
                 }
             });
-        }, 200);
-    });
+
+            clearTimeout(isScrolling);
+            isScrolling = setTimeout(() => {
+                cards.forEach((card) => {
+                    const badge = card.querySelector(".creator-badge");
+                    const overlay = card.querySelector(".creator-overlay");
+                    if (badge) {
+                        badge.style.opacity = "1";
+                        badge.style.transform = "translateY(0)";
+                    }
+                    if (overlay) {
+                        overlay.style.opacity = "1";
+                    }
+                });
+            }, 200);
+        });
+    }
 });
