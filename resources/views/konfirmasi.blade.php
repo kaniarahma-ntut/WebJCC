@@ -384,7 +384,7 @@
                             </span>
                             <div class="text-right">
                                 <strong class="font-headline text-charcoal block">09:00 - 22:00</strong>
-                                <span class="text-[10px] text-secondary">(1 Hari Penuh)</span>
+                                <span class="text-[10px] text-secondary">(1 Hari)</span>
                             </div>
                         </div>
 

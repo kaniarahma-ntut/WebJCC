@@ -22,6 +22,8 @@ class PeminjamanRuang extends Model
         'end_time',
         'status_peminjaman',
         'status_pembayaran',
+        'catatan_admin',
+        'surat_peminjaman',  
         'total_harga',
         'user_id_user',
         'ruangan_id_ruangan',

@@ -34,6 +34,11 @@ return new class extends Migration
                     'failed'
                 ])->default('pending');    
             $table->integer('total_harga');
+            $table->string('surat_peminjaman')->nullable();
+            
+            $table->text('catatan_admin')->nullable()->after('status_pembayaran');
+            $table->string('surat_peminjaman')->nullable()->after('catatan_admin');
+            
             $table->unsignedBigInteger('user_id_user');
             $table->unsignedBigInteger('ruangan_id_ruangan');
             $table->foreign('user_id_user')->references('id_user')->on('user');

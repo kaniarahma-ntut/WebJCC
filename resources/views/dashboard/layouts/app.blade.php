@@ -277,6 +277,16 @@
                             @endif
                         </a>
 
+                        <!-- Manajemen Barang -->
+                        <a href="/dashboard/manajemen-barang"
+                            class="nav-link flex items-center gap-3 px-4 py-3 rounded-2xl transition-all {{ request()->is('dashboard/manajemen-barang*') ? 'bg-merah-jcc text-broken-white shadow-lg shadow-merah-jcc/25' : 'text-charcoal/70 hover:bg-charcoal/5 hover:text-merah-jcc' }}">
+                            <span class="material-symbols-outlined text-lg" {!! request()->is('dashboard/manajemen-barang*') ? 'style="font-variation-settings: \'FILL\' 1;"' : '' !!}>inventory_2</span>
+                            <span class="sidebar-label flex-1">Manajemen Barang</span>
+                            @if (request()->is('dashboard/manajemen-barang*'))
+                                <span class="sidebar-badge w-1.5 h-1.5 rounded-full bg-broken-white"></span>
+                            @endif
+                        </a>
+
                         <!-- Manajemen Pengguna -->
                         <a href="/dashboard/manajemen-pengguna"
                             class="nav-link flex items-center gap-3 px-4 py-3 rounded-2xl transition-all {{ request()->is('dashboard/manajemen-pengguna*') ? 'bg-merah-jcc text-broken-white shadow-lg shadow-merah-jcc/25' : 'text-charcoal/70 hover:bg-charcoal/5 hover:text-merah-jcc' }}">
@@ -308,15 +318,7 @@
                             @endif
                         </a>
 
-                        <!-- Manajemen Event -->
-                        <a href="/dashboard/manajemen-event"
-                            class="nav-link flex items-center gap-3 px-4 py-3 rounded-2xl transition-all {{ request()->is('dashboard/manajemen-event*') ? 'bg-merah-jcc text-broken-white shadow-lg shadow-merah-jcc/25' : 'text-charcoal/70 hover:bg-charcoal/5 hover:text-merah-jcc' }}">
-                            <span class="material-symbols-outlined text-lg" {!! request()->is('dashboard/manajemen-event*') ? 'style="font-variation-settings: \'FILL\' 1;"' : '' !!}>event</span>
-                            <span class="sidebar-label flex-1">Manajemen Event</span>
-                            @if (request()->is('dashboard/manajemen-event*'))
-                                <span class="sidebar-badge w-1.5 h-1.5 rounded-full bg-broken-white"></span>
-                            @endif
-                        </a>
+                        
                     @elseif ($userRole === 'admin_Disporabudpar')
                         <!-- Terima Pemesanan -->
                         <a href="/dashboard/terima-pemesanan"
