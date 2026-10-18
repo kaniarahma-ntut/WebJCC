@@ -68,7 +68,7 @@
                                 <td class="px-5 py-3.5 font-mono text-charcoal/70">{{ $u->username }}</td>
                                 <td class="px-5 py-3.5 text-secondary">{{ $u->email }}</td>
                                 <td class="px-5 py-3.5">
-                                    <span class="inline-block text-[10px] font-bold px-2.5 py-1 rounded-full {{ $roleC[$u->role_user] ?? 'bg-charcoal/5 text-charcoal/60' }}">{{ $roleL[$u->role_user] ?? $u->role_user }}</span>
+                                    <span class="inline-block text-[10px] font-bold px-2.5 py-1 rounded-full {{ $roleC[$u->user_role] ?? 'bg-charcoal/5 text-charcoal/60' }}">{{ $roleL[$u->user_role] ?? $u->user_role }}</span>
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <div class="flex items-center justify-end gap-2">

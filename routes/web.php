@@ -97,7 +97,8 @@ Route::middleware('auth')->group(function () {
             'nama_user' => 'required|max:255',
             'username' => 'required|max:20|unique:user,username',
             'email' => 'required|email|max:100|unique:user,email',
-            'role_user' => 'required|in:user,creator,admin_JCC,admin_Disporabudpar',
+            'admin_role' => 'required|in:none,admin_JCC,admin_Disporabudpar',
+            'user_role' => 'required|in:user,komunitas,talent,tenant',
             'website' => 'nullable|max:255',
             'password' => 'required|min:6',
         ]);
@@ -115,7 +116,8 @@ Route::middleware('auth')->group(function () {
             'nama_user' => 'required|max:255',
             'username' => 'required|max:20|unique:user,username,' . $id . ',id_user',
             'email' => 'required|email|max:100|unique:user,email,' . $id . ',id_user',
-            'role_user' => 'required|in:user,creator,admin_JCC,admin_Disporabudpar',
+            'admin_role' => 'required|in:none,admin_JCC,admin_Disporabudpar',
+            'user_role' => 'required|in:user,komunitas,talent,tenant',
             'website' => 'nullable|max:255',
             'password' => 'nullable|min:6',
         ]);

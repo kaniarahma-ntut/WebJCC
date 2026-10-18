@@ -4,7 +4,7 @@
 
 @section('dashboard-content')
     @php
-        $userRole = Auth::user()->role_user ?? 'user';
+        $userRole = Auth::user()->user_role ?? 'user';
     @endphp
 
     @if ($userRole === 'admin_JCC')

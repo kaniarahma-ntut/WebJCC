@@ -13,19 +13,26 @@ return new class extends Migration
     {
         Schema::create('user', function (Blueprint $table) {
             $table->id('id_user');
-            $table->string('username', 20);
+            $table->string('username', 20)->unique();
             $table->string('email', 100)->unique();
             $table->string('password', 255); 
-            $table->string('nama_user', 255)
-            ;
-            $table->enum('role_user', [
-                    'admin_JCC', 
-                    'admin_Disporabudpar', 
-                    'user', 
-                    'creator'
+            $table->string('nama_user', 255);
+            $table->enum('admin_role', [
+                'admin_JCC', 
+                'admin_Disporabudpar', 
+                'none'
+                ])->default('none');
+            $table->enum('user_role', [
+                'user', 
+                'komunitas', 
+                'talent', 
+                'tenant'
                 ])->default('user');
             $table->string('website', 255)->nullable();
             $table->timestamps();
+
+            $table->unsignedBigInteger('subsektor_id_subsektor')->nullable();
+            $table->foreign('subsektor_id_subsektor')->references('id_subsektor')->on('subsektor')->onDelete('set null');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

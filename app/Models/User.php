@@ -24,7 +24,9 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
-        'role_user',
+        'admin_role',
+        'user_role',
+        'subsektor_id_subsektor',
         'website',
     ];
 
@@ -32,4 +34,19 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    protected function username(): Attribute
+    {
+        return Attribute::make(
+            set: fn (string $value) => Str::of($value)
+                ->lower()              // Ubah jadi huruf kecil semua
+                ->replace(' ', '')      // Hapus spasi
+                ->toString(),
+        );
+    }
+
+    public function subsektor()
+    {
+        return $this->belongsTo(Subsektor::class, 'subsektor_id_subsektor', 'id_subsektor');
+    }
 }

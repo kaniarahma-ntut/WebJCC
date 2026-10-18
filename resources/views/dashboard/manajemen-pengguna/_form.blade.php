@@ -4,7 +4,7 @@
     $nama = old('nama_user', $user->nama_user ?? '');
     $username = old('username', $user->username ?? '');
     $email = old('email', $user->email ?? '');
-    $role = old('role_user', $user->role_user ?? 'user');
+    $role = old('user_role', $user->user_role ?? 'user');
     $website = old('website', $user->website ?? '');
 @endphp
 
@@ -41,7 +41,7 @@
         </div>
         <div>
             <label class="block text-[10px] font-bold uppercase tracking-widest text-secondary mb-1.5">Peran</label>
-            <select name="role_user"
+            <select name="user_role"
                 class="w-full bg-cream-dark/50 border border-charcoal/10 rounded-xl px-4 py-2.5 text-xs text-charcoal focus:outline-none focus:border-merah-jcc focus:ring-1 focus:ring-merah-jcc transition-all">
                 <option value="user" {{ $role === 'user' ? 'selected' : '' }}>Anggota</option>
                 <option value="creator" {{ $role === 'creator' ? 'selected' : '' }}>Creator</option>

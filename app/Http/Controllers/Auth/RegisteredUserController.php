@@ -20,7 +20,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $subsektors = \App\Models\Subsektor::all();
+        return view('auth.register', compact('subsektors'));
     }
 
     /**
@@ -35,6 +36,16 @@ class RegisteredUserController extends Controller
             'username'  => ['required', 'string', 'max:20', 'unique:user'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'user_role' => ['required', 'in:user,komunitas,talent,tenant'],
+            'subsektor_id_subsektor' => [
+                'nullable',
+                'exists:subsektor,id_subsektor',
+                function ($attribute, $value, $fail) use ($request) {
+                    if (in_array($request->user_role, ['komunitas', 'talent', 'tenant']) && empty($value)) {
+                        $fail('Subsektor wajib dipilih untuk role ini.');
+                    }
+                },
+            ],
         ]);
 
         $user = User::create([
@@ -42,6 +53,9 @@ class RegisteredUserController extends Controller
             'username'  => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'admin_role' => 'none',
+            'user_role' => $request->user_role,
+            'subsektor_id_subsektor' => $request->subsektor_id_subsektor ?? null,
         ]);
 
         event(new Registered($user));

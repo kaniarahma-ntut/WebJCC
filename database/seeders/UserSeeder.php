@@ -14,30 +14,47 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         DB::table('user')->insert([
+
             [
-                'username' => 'admin JCC',
+                'username' => 'adminJCC',
                 'email' => 'admin@gmail.com',
                 'password' => bcrypt('admin123'),
                 'nama_user' => 'Admin JCC',
-                'role_user' => 'admin_JCC',
-                'website' => null
-            ],
-                        [
-                'username' => 'user1',
-                'email' => 'user1@gmail.com',
-                'password' => bcrypt('user123'),
-                'nama_user' => 'user 1',
-                'role_user' => 'user',
-                'website' => null
+                'admin_role' => 'admin_JCC',
+                'user_role' => 'user',
+                'website' => null,
+                'subsektor_id_subsektor' => null
             ],
             [
-                'username' => 'admin disporabudpar',
+                'username' => 'admindisporabudpar',
                 'email' => 'admin2@gmail.com',
                 'password' => bcrypt('admin123'),
                 'nama_user' => 'Admin Disporabudpar',
-                'role_user' => 'admin_disporabudpar',
-                'website' => null
-            ]
+                'admin_role' => 'admin_disporabudpar',
+                'user_role' => 'user',
+                'website' => null,
+                'subsektor_id_subsektor' => null
+            ],
+            [
+                'username' => 'komunitaskopijember',
+                'email' => 'kopi@gmail.com',
+                'password' => bcrypt('kopi123'),
+                'nama_user' => 'Komunitas Kopi Jember',
+                'admin_role' => 'none',
+                'user_role' => 'komunitas',
+                'website' => null,
+                'subsektor_id_subsektor' => '11'
+            ],
+            [
+                'username' => 'user1',
+                'email' => 'user1@gmail.com',
+                'password' => bcrypt('user123'),
+                'nama_user' => 'User 1',
+                'admin_role' => 'none',
+                'user_role' => 'user',
+                'website' => null,
+                'subsektor_id_subsektor' => null
+            ],
         ]);
     }
 }

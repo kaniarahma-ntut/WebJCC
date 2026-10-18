@@ -197,13 +197,14 @@
 
             @php
                 $userName = Auth::user()->nama_user ?? 'Pengguna';
-                $userRole = Auth::user()->role_user ?? 'user';
+                $userRole = Auth::user()->user_role ?? 'user';
                 $roleLabels = [
-                    'admin_JCC' => 'Admin JCC',
-                    'admin_Disporabudpar' => 'Admin Disporabudpar',
+                    'komunitas' => 'Komunitas',
+                    'tenant' => 'Tenant',
+                    'talent' => 'Talent',
                     'user' => 'Anggota',
                 ];
-                $roleLabel = $roleLabels[$userRole] ?? 'Anggota';
+                $roleLabel = $roleLabels[$userRole] ?? 'Anggota';   
                 $nameParts = preg_split('/\s+/', trim($userName));
                 $initials = mb_strtoupper(mb_substr($nameParts[0] ?? '', 0, 1) . mb_substr($nameParts[1] ?? '', 0, 1));
                 if ($initials === '') {

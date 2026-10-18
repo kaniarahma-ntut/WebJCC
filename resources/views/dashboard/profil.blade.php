@@ -10,8 +10,8 @@
         if ($initials === '') {
             $initials = 'U';
         }
-        $roleLabels = ['admin_JCC' => 'Admin JCC', 'admin_Disporabudpar' => 'Admin Disporabudpar', 'user' => 'Anggota'];
-        $roleLabel = $roleLabels[$user->role_user] ?? 'Anggota';
+        $roleLabels = ['admin_JCC' => 'Admin JCC', 'admin_disporabudpar' => 'Admin Disporabudpar', 'user' => 'Anggota'];
+        $roleLabel = $roleLabels[$user->user_role] ?? 'Anggota';
     @endphp
 
     <div class="max-w-5xl mx-auto space-y-6 md:space-y-8 pb-12 w-full">

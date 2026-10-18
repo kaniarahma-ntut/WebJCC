@@ -295,6 +295,32 @@
             text-decoration: underline;
         }
 
+        .span-full {
+            grid-column: span 2 / span 2;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--charcoal);
+            background: #fff;
+            border: 1.5px solid #e4ddd2;
+            border-radius: 14px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+        select:focus {
+            border-color: var(--merah);
+            box-shadow: 0 0 0 4px rgba(214, 40, 40, .12);
+        }
+
         @media (max-width: 480px) {
             .card {
                 padding: 32px 24px 28px;
@@ -309,6 +335,11 @@
                 grid-template-columns: 1fr;
                 gap: 16px;
             }
+
+            .span-full {
+                grid-column: span 1 / span 1;
+            }
+            
         }
     </style>
 </head>
@@ -353,7 +384,7 @@
                         <label for="username">{{ __('Username') }}</label>
                         <div class="input-wrap">
                             <input id="username" type="text" name="username" value="{{ old('username') }}" required
-                                autocomplete="username" placeholder="nama_pengguna">
+                                autocomplete="username" placeholder="username">
                         </div>
                         @error('username')
                             <p class="input-error">{{ $message }}</p>
@@ -370,6 +401,40 @@
                             <p class="input-error">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    <div class="field">
+                        <label for="user_role">{{ __('Siapa Anda?') }}</label>
+                        <div class="input-wrap">
+                            <select id="user_role" name="user_role" required onchange="toggleSubsektor()">
+                                <option value="user" {{ old('user_role') == 'user' ? 'selected' : '' }}>Pengguna Umum</option>
+                                <option value="komunitas" {{ old('user_role') == 'komunitas' ? 'selected' : '' }}>Komunitas</option>
+                                <option value="talent" {{ old('user_role') == 'talent' ? 'selected' : '' }}>Talent / Kreator</option>
+                                <option value="tenant" {{ old('user_role') == 'tenant' ? 'selected' : '' }}>Tenant</option>
+                            </select>
+                        </div>
+                        @error('user_role')
+                            <p class="input-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+
+                    <div class="field span-full" id="subsektor-container" style="display: none;">
+                        <label for="id_subsektor">{{ __('Subsektor') }} <span class="text-merah" id="subsektor-required-star" style="display: none;">*</span></label>
+                        <div class="input-wrap">
+                            <select id="id_subsektor" name="subsektor_id_subsektor">
+                                <option value="">-- Pilih Subsektor --</option>
+                                @foreach ($subsektors as $sub)
+                                    <option value="{{ $sub->id_subsektor }}" {{ old('id_subsektor') == $sub->id_subsektor ? 'selected' : '' }}>
+                                        {{ $sub->nama_subsektor }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('id_subsektor')
+                            <p class="input-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
 
                     <div class="field">
                         <label for="password">{{ __('Kata Sandi') }}</label>
@@ -404,6 +469,32 @@
     </div>
 
     <script>
+
+        // Subsektor Toggle Logic
+        const roleSelect = document.getElementById('user_role');
+        const subsektorContainer = document.getElementById('subsektor-container');
+        const subsektorSelect = document.getElementById('id_subsektor');
+        const requiredStar = document.getElementById('subsektor-required-star');
+
+        function toggleSubsektor() {
+            const role = roleSelect.value;
+            // Show for komunitas, talent, tenant
+            if (['komunitas', 'talent', 'tenant'].includes(role)) {
+                subsektorContainer.style.display = 'block';
+                subsektorSelect.setAttribute('required', 'required');
+                subsektorSelect.disabled = false; // Enable it
+                requiredStar.style.display = 'inline';
+            } else {
+                subsektorContainer.style.display = 'none';
+                subsektorSelect.removeAttribute('required');
+                subsektorSelect.disabled = true; // Disable it so browser doesn't send it
+                subsektorSelect.value = ''; 
+                requiredStar.style.display = 'none';
+            }
+        }
+
+        // Run on page load in case of validation errors (old input)
+        toggleSubsektor();
         const toggle = document.getElementById('toggle-password');
         const password = document.getElementById('password');
         toggle.addEventListener('click', () => {
