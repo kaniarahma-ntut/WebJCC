@@ -202,6 +202,15 @@
                             <h2 class="font-headline font-extrabold text-2xl text-charcoal">
                                 {{ str_pad($booking->id_peminjaman_ruangan, 4, '0', STR_PAD_LEFT) }}
                             </h2>
+
+                            {{-- Show the user's name if the currently logged-in user is an admin --}}
+                            @if(in_array(auth()->user()->admin_role, ['admin_JCC', 'admin_Disporabudpar']))
+                                <p class="text-xs font-bold text-charcoal mt-2 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px] text-merah-jcc">person</span>
+                                    Pemesan: {{ $booking->user->nama_user ?? 'Unknown' }} ({{ $booking->user->email ?? '-' }})
+                                </p>
+                            @endif
+                            
                         </div>
                         <div class="bg-charcoal/5 p-2 rounded-xl text-charcoal/50">
                             <span class="material-symbols-outlined">receipt_long</span>

@@ -98,27 +98,16 @@
                         </div>
 
                         <!-- Date Picker -->
-                        @php
-                            use Carbon\Carbon;
-
-                            $today = Carbon::today();
-                            $monthStart = $today->copy()->startOfMonth();
-                            $monthEnd = $today->copy()->endOfMonth();
-                            $daysInMonth = $today->daysInMonth;
-                            $firstWeekday = $monthStart->dayOfWeek; // 0=Sunday, 6=Saturday
-
-                            // Latest bookable date = today + 2 months (end of the 3rd month)
-                            $maxBookableDate = $today->copy()->addMonths(2)->endOfMonth();
-
-                            $monthLabel = $today->translatedFormat('F Y');
-                        @endphp
-
                         <div>
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="font-headline font-bold text-lg text-charcoal">Pilih Tanggal</h3>
-                                <div class="flex items-center gap-2 font-headline font-bold text-sm text-charcoal">
-                                    <span>{{ $monthLabel }}</span>
-                                </div>
+                                
+                                <!-- Month Selector -->
+                                <select id="month-selector" class="bg-cream-dark/50 border border-charcoal/10 rounded-xl px-4 py-2 text-xs font-bold text-charcoal focus:outline-none focus:border-merah-jcc transition-all">
+                                    @foreach($months as $month)
+                                        <option value="{{ $month['value'] }}">{{ $month['label'] }}</option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             {{-- Day-of-week header --}}
@@ -126,41 +115,9 @@
                                 <div>Mg</div><div>Sn</div><div>Sl</div><div>Rb</div><div>Km</div><div>Jm</div><div>Sb</div>
                             </div>
 
-                            {{-- Calendar grid --}}
-                            <div class="grid grid-cols-7 gap-2 text-center text-xs font-medium font-body">
-                                {{-- Empty cells to align the 1st of the month to its weekday --}}
-                                @for ($i = 0; $i < $firstWeekday; $i++)
-                                    <span></span>
-                                @endfor
-
-                                {{-- Actual days --}}
-                                @for ($day = 1; $day <= $daysInMonth; $day++)
-                                    @php
-                                        $date = $monthStart->copy()->day($day);
-                                        $isPast = $date->lt($today);
-                                        $isBeyondLimit = $date->gt($maxBookableDate);
-                                        $isToday = $date->isToday();
-                                        $isSelectable = !$isPast && !$isBeyondLimit;
-                                        $dateStr = $date->format('Y-m-d');
-                                        $dateDisplay = $date->translatedFormat('d M Y');
-                                    @endphp
-
-                                    @if ($isSelectable)
-                                        <button
-                                            type="button"
-                                            class="date-btn p-2.5 rounded-full transition-all
-                                                {{ $isToday ? 'text-merah-jcc font-bold ring-1 ring-merah-jcc' : 'text-charcoal hover:bg-cream-dark' }}"
-                                            data-date="{{ $dateStr }}"
-                                            data-display="{{ $dateDisplay }}">
-                                            {{ $day }}
-                                        </button>
-                                    @else
-                                        <span class="p-2.5 text-charcoal/30 {{ $isPast ? 'line-through' : '' }} cursor-not-allowed"
-                                            title="{{ $isBeyondLimit ? 'Di luar jangkauan booking' : 'Tanggal sudah lewat' }}">
-                                            {{ $day }}
-                                        </span>
-                                    @endif
-                                @endfor
+                            {{-- Calendar grid (Now empty, JS will fill it) --}}
+                            <div class="grid grid-cols-7 gap-2 text-center text-xs font-medium font-body" id="calendar-grid">
+                                <!-- JavaScript will inject the days here -->
                             </div>
                         </div>
 
@@ -412,279 +369,414 @@
     </div>
 
     <script>
-    // SERVER-INJECTED DATA
-    const roomPricePerDay = {{ (int) $ruangan->tarif_sewa_ruangan }};
-    const barangData = {
-        @foreach($barangs as $barang)
-            "{{ $barang->id_barang }}": {
-                id: "{{ $barang->id_barang }}",
-                name: "{{ addslashes($barang->nama_barang) }}",
-                keywords: "{{ addslashes($barang->keywords_barang ?? '') }}".toLowerCase(),
-                jenis: "{{ addslashes($barang->jenis_barang ?? '') }}".toLowerCase(),
-                price: {{ (int) $barang->harga_sewa }}
-            },
-        @endforeach
-    };
+        // SERVER-INJECTED DATA
+        const roomPricePerDay = {{ (int) $ruangan->tarif_sewa_ruangan }};
+        const barangData = {
+            @foreach($barangs as $barang)
+                "{{ $barang->id_barang }}": {
+                    id: "{{ $barang->id_barang }}",
+                    name: "{{ addslashes($barang->nama_barang) }}",
+                    keywords: "{{ addslashes($barang->keywords_barang ?? '') }}".toLowerCase(),
+                    jenis: "{{ addslashes($barang->jenis_barang ?? '') }}".toLowerCase(),
+                    price: {{ (int) $barang->harga_sewa }}
+                },
+            @endforeach
+        };
 
-    
-    // STATE (declare everything UP FRONT)
-    
-    let currentStep = 1;
-    let selectedDate = "{{ ($today ?? \Carbon\Carbon::today())->format('Y-m-d') }}";
-    let selectedDateDisplay = "{{ ($today ?? \Carbon\Carbon::today())->translatedFormat('d M Y') }}";
-    const selectedItems = new Set();   // ← moved to top!
+        // STATE
+        let currentStep = 1;
+        let selectedDate = "{{ ($today ?? \Carbon\Carbon::today())->format('Y-m-d') }}";
+        let selectedDateDisplay = "{{ ($today ?? \Carbon\Carbon::today())->translatedFormat('d M Y') }}";
+        const selectedItems = new Set();
 
-    
-    // DOM ELEMENT CACHE
-    
-    const ITEM_LIMIT = 5;
-    const itemSearch = document.getElementById('item-search');
-    const itemSearchClear = document.getElementById('item-search-clear');
-    const itemRows = document.querySelectorAll('.item-row');
-    const itemNoResults = document.getElementById('item-no-results');
-    const itemVisibleCount = document.getElementById('item-visible-count');
-    const itemTotalCount = document.getElementById('item-total-count');
-    const itemCart = document.getElementById('item-cart');
-    const cartList = document.getElementById('cart-list');
-    const cartCount = document.getElementById('cart-count');
+        // DOM ELEMENT CACHE
+        const ITEM_LIMIT = 5;
+        const itemSearch = document.getElementById('item-search');
+        const itemSearchClear = document.getElementById('item-search-clear');
+        const itemRows = document.querySelectorAll('.item-row');
+        const itemNoResults = document.getElementById('item-no-results');
+        const itemVisibleCount = document.getElementById('item-visible-count');
+        const itemTotalCount = document.getElementById('item-total-count');
+        const itemCart = document.getElementById('item-cart');
+        const cartList = document.getElementById('cart-list');
+        const cartCount = document.getElementById('cart-count');
+        const allItemRows = Array.from(itemRows);
 
-    const allItemRows = Array.from(itemRows);
+        // === HELPER: FETCH ITEM AVAILABILITY ===
+        function fetchItemAvailability(date) {
+            // Hit the API with the selected date
+            fetch(`{{ route('api.ruangan.availability', $ruangan->id_ruangan) }}?date=${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    const bookedBarangIds = data.booked_barang_ids.map(String); // Convert to strings to match dataset
+                    
+                    // 1. Reset all items to visible first
+                    allItemRows.forEach(row => {
+                        row.style.display = 'flex';
+                        row.classList.remove('opacity-50', 'pointer-events-none');
+                        row.querySelector('h4').classList.remove('line-through', 'text-gray-400');
+                    });
 
-    
-    // DATE PICKER
-    
-    document.querySelectorAll('.date-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+                    // 2. Loop through items and disable the booked ones
+                    allItemRows.forEach(row => {
+                        const id = row.dataset.id;
+                        if (bookedBarangIds.includes(id)) {
+                            // Visually disable the row
+                            row.style.display = 'none'; // Or use 'opacity-50 pointer-events-none' if you prefer to show them greyed out
+                            row.classList.add('opacity-50', 'pointer-events-none');
+                            row.querySelector('h4').classList.add('line-through', 'text-gray-400');
+
+                            // If this item is in the cart, remove it automatically!
+                            if (selectedItems.has(id)) {
+                                toggleItem(row, true); // true = force removal
+                            }
+                        }
+                    });
+
+                    // Re-apply the search filter (so hidden items stay hidden)
+                    applyItemFilter();
+                })
+                .catch(error => console.error('Error fetching item availability:', error));
+        }
+
+        // === DATE PICKER ===
+        document.querySelectorAll('.date-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.date-btn').forEach(b => {
+                    b.classList.remove('bg-merah-jcc', 'text-broken-white', 'font-bold', 'shadow-md');
+                    if (!b.classList.contains('ring-1')) b.classList.add('hover:bg-cream-dark');
+                });
+                btn.classList.add('bg-merah-jcc', 'text-broken-white', 'font-bold', 'shadow-md');
+                btn.classList.remove('hover:bg-cream-dark');
+
+                selectedDate = btn.dataset.date;
+                selectedDateDisplay = btn.dataset.display;
+                document.getElementById('input-tanggal').value = selectedDate;
+                
+                updateSummary();
+                fetchItemAvailability(selectedDate); // Check items when date changes
+            });
+        });
+
+        // === ITEM TOGGLE ===
+        function toggleItem(row, forceRemove = false) {
+            const id = row.dataset.id;
+            const checkbox = row.querySelector('.item-checkbox');
+            const checkIcon = checkbox.querySelector('.material-symbols-outlined');
+            const hiddenInput = row.querySelector('input[type="hidden"]');
+
+            if (selectedItems.has(id) || forceRemove) {
+                selectedItems.delete(id);
+                checkbox.classList.remove('bg-merah-jcc', 'border-merah-jcc');
+                checkbox.classList.add('border-charcoal/20');
+                checkIcon.classList.add('hidden');
+                hiddenInput.disabled = true;
+            } else {
+                selectedItems.add(id);
+                checkbox.classList.add('bg-merah-jcc', 'border-merah-jcc');
+                checkbox.classList.remove('border-charcoal/20');
+                checkIcon.classList.remove('hidden');
+                hiddenInput.disabled = false;
+            }
+
+            renderCart();
+            updateSummary();
+        }
+
+        // === RENDER CART ===
+        function renderCart() {
+            if (selectedItems.size === 0) {
+                itemCart.classList.add('hidden');
+                return;
+            }
+
+            itemCart.classList.remove('hidden');
+            cartCount.textContent = selectedItems.size;
+
+            const cartItems = allItemRows.filter(row => selectedItems.has(row.dataset.id));
+
+            cartList.innerHTML = cartItems.map(row => `
+                <div class="flex items-center justify-between p-3 bg-merah-jcc/5 border border-merah-jcc/20 rounded-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-merah-jcc/15 text-merah-jcc flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-base">check</span>
+                        </div>
+                        <div>
+                            <h5 class="font-headline font-bold text-xs text-charcoal">${row.dataset.display}</h5>
+                            <p class="font-body text-[10px] text-secondary">
+                                ${row.dataset.jenisDisplay} • Rp ${Number(row.dataset.price).toLocaleString('id-ID')}/hari
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button"
+                        class="cart-remove w-7 h-7 rounded-full hover:bg-merah-jcc/10 text-merah-jcc flex items-center justify-center transition-colors shrink-0"
+                        data-id="${row.dataset.id}">
+                        <span class="material-symbols-outlined text-base">close</span>
+                    </button>
+                </div>
+            `).join('');
+
+            cartList.querySelectorAll('.cart-remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    const row = allItemRows.find(r => r.dataset.id === id);
+                    if (row) toggleItem(row);
+                });
+            });
+        }
+
+        // === FILTER / SEARCH ===
+        function applyItemFilter() {
+            const query = (itemSearch?.value || '').trim().toLowerCase();
+            let visible = 0;
+
+            allItemRows.forEach(row => {
+                // Don't override the hidden status if it's booked/disabled
+                if (row.classList.contains('pointer-events-none')) return; 
+
+                row.style.display = 'none';
+            });
+
+            let matchingRows;
+            if (query === '') {
+                matchingRows = allItemRows.filter(row => !row.classList.contains('pointer-events-none'));
+            } else {
+                matchingRows = allItemRows
+                    .filter(row => !row.classList.contains('pointer-events-none'))
+                    .map(row => {
+                        const name = row.dataset.name || '';
+                        const keywords = row.dataset.keywords || '';
+                        const jenis = row.dataset.jenis || '';
+                        let score = 0;
+                        if (name === query) score += 100;
+                        else if (name.startsWith(query)) score += 50;
+                        else if (name.includes(query)) score += 30;
+                        if (keywords.split(',').map(k => k.trim()).includes(query)) score += 40;
+                        else if (keywords.includes(query)) score += 20;
+                        if (jenis.includes(query)) score += 10;
+                        return { row, score };
+                    })
+                    .filter(item => item.score > 0)
+                    .sort((a, b) => b.score - a.score)
+                    .map(item => item.row);
+            }
+
+            matchingRows.slice(0, ITEM_LIMIT).forEach(row => {
+                row.style.display = 'flex';
+                visible++;
+            });
+
+            if (itemVisibleCount) itemVisibleCount.textContent = visible;
+            if (itemTotalCount) itemTotalCount.textContent = allItemRows.filter(row => !row.classList.contains('pointer-events-none')).length;
+
+            if (itemNoResults) itemNoResults.classList.toggle('hidden', visible > 0);
+            if (itemSearchClear) itemSearchClear.classList.toggle('hidden', query === '');
+        }
+
+        // === UPDATE SUMMARY PANEL ===
+        function updateSummary() {
+            document.getElementById('summary-date').textContent = selectedDateDisplay;
+
+            const extrasContainer = document.getElementById('summary-extras');
+            let extrasHTML = '';
+            let totalExtras = 0;
+
+            selectedItems.forEach(id => {
+                const data = barangData[id];
+                if (!data) return;
+                extrasHTML += `<div>${data.name}</div>`;
+                totalExtras += data.price;
+            });
+
+            if (!extrasHTML) extrasHTML = '<div class="font-normal text-secondary">Tidak ada</div>';
+            extrasContainer.innerHTML = extrasHTML;
+
+            const grandTotal = roomPricePerDay + totalExtras;
+            document.getElementById('summary-total').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+        }
+
+        // === CALENDAR ENGINE ===
+        function renderCalendar(monthString) {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = ''; // Clear previous month
+
+            const [year, month] = monthString.split('-');
+            const firstDay = new Date(year, month - 1, 1);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const startingWeekday = firstDay.getDay(); // 0 = Sunday
+            
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            // Max date = 2 months from now
+            const maxDate = new Date();
+            maxDate.setMonth(maxDate.getMonth() + 3);
+            maxDate.setDate(0);
+
+            // 1. Add empty slots for padding
+            for (let i = 0; i < startingWeekday; i++) {
+                grid.innerHTML += `<span></span>`;
+            }
+
+            // 2. Generate days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateObj = new Date(year, month - 1, day);
+                // Adjust for timezone offset
+                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const isPast = dateObj < today;
+                const isBeyondLimit = dateObj > maxDate;
+                const isToday = dateObj.getTime() === today.getTime();
+                
+                if (isPast || isBeyondLimit) {
+                    grid.innerHTML += `<span class="p-2.5 text-charcoal/30 ${isPast ? 'line-through' : ''} cursor-not-allowed">${day}</span>`;
+                } else {
+                    const todayClass = isToday ? 'text-merah-jcc font-bold ring-1 ring-merah-jcc' : 'text-charcoal hover:bg-cream-dark';
+                    grid.innerHTML += `
+                        <button type="button" 
+                            class="date-btn p-2.5 rounded-full transition-all ${todayClass}"
+                            data-date="${dateStr}"
+                            onclick="selectDate(this, '${dateStr}')">
+                            ${day}
+                        </button>
+                    `;
+                }
+            }
+        }
+
+        function selectDate(btn, dateStr) {
+            // UI selection
             document.querySelectorAll('.date-btn').forEach(b => {
                 b.classList.remove('bg-merah-jcc', 'text-broken-white', 'font-bold', 'shadow-md');
-                if (!b.classList.contains('ring-1')) {
-                    b.classList.add('hover:bg-cream-dark');
-                }
+                if (!b.classList.contains('ring-1')) b.classList.add('hover:bg-cream-dark');
             });
             btn.classList.add('bg-merah-jcc', 'text-broken-white', 'font-bold', 'shadow-md');
             btn.classList.remove('hover:bg-cream-dark');
 
-            selectedDate = btn.dataset.date;
-            selectedDateDisplay = btn.dataset.display;
+            // Update state
+            selectedDate = dateStr;
+            // Format for display (e.g., "20 Oct 2026")
+            const d = new Date(dateStr);
+            selectedDateDisplay = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            
             document.getElementById('input-tanggal').value = selectedDate;
             updateSummary();
+            
+            // Fetch new items for this date
+            fetchItemAvailability(selectedDate);
+        }
+
+        // === CHECK ROOM AVAILABILITY ===
+        let bookedDatesMemory = []; // Store dates globally so we remember them
+
+        function checkRoomAvailability() {
+            fetch("{{ route('api.ruangan.availability', $ruangan->id_ruangan) }}")
+            .then(response => response.json())
+            .then(data => {
+                bookedDatesMemory = data.booked_dates || []; // Save to memory
+                
+                // Grey out booked dates
+                document.querySelectorAll('.date-btn').forEach(btn => {
+                    if (bookedDatesMemory.includes(btn.dataset.date)) {
+                        btn.disabled = true;
+                        btn.classList.add('bg-gray-200', 'text-gray-400', 'opacity-50', 'cursor-not-allowed', 'line-through');
+                        btn.classList.remove('hover:bg-cream-dark', 'text-charcoal', 'ring-1', 'ring-merah-jcc', 'text-merah-jcc');
+                        btn.title = "Maaf, ruangan sudah dibooking pada tanggal ini!";
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching availability:', error));
+        }
+
+        // === STEPPER ===
+        function goToStep(step) {
+            // ... (KEEP YOUR EXISTING STEPPER CODE HERE, DON'T DELETE IT) ...
+            currentStep = step;
+            [1, 2, 3].forEach(i => {
+                document.getElementById(`step-content-${i}`).classList.toggle('hidden', i !== step);
+            });
+            const progressLine = document.getElementById('step-progress');
+            progressLine.style.width = step === 1 ? '0%' : step === 2 ? '50%' : '100%';
+            for (let i = 1; i <= 3; i++) {
+                const node = document.getElementById(`step-node-${i}`);
+                const label = document.getElementById(`step-label-${i}`);
+                if (i <= step) {
+                    node.className = "w-10 h-10 rounded-full bg-merah-jcc text-broken-white font-headline font-bold flex items-center justify-center shadow-md transition-all";
+                    label.className = "font-headline font-bold text-xs text-charcoal";
+                } else {
+                    node.className = "w-10 h-10 rounded-full bg-broken-white border-2 border-charcoal/20 text-charcoal/60 font-headline font-bold flex items-center justify-center shadow-sm transition-all";
+                    label.className = "font-headline font-bold text-xs text-charcoal/60";
+                }
+            }
+            if (step === 3) {
+                document.getElementById('review-event-title').textContent = document.getElementById('input-event-title').value || '-';
+                document.getElementById('review-event-type').textContent = document.getElementById('input-event-type').value || '-';
+                document.getElementById('review-kapasitas').textContent = document.getElementById('input-kapasitas').value || '-';
+                document.getElementById('review-phone').textContent = document.getElementById('input-phone').value || '-';
+            }
+            window.scrollTo({ top: 100, behavior: 'smooth' });
+        }
+
+        // === EVENT LISTENERS ===
+        allItemRows.forEach(row => {
+            row.addEventListener('click', () => toggleItem(row));
         });
-    });
 
-    
-    // ITEM TOGGLE
-    
-    function toggleItem(row) {
-        const id = row.dataset.id;
-        const checkbox = row.querySelector('.item-checkbox');
-        const checkIcon = checkbox.querySelector('.material-symbols-outlined');
-        const hiddenInput = row.querySelector('input[type="hidden"]');
+        if (itemSearch) itemSearch.addEventListener('input', applyItemFilter);
 
-        if (selectedItems.has(id)) {
-            selectedItems.delete(id);
-            checkbox.classList.remove('bg-merah-jcc', 'border-merah-jcc');
-            checkbox.classList.add('border-charcoal/20');
-            checkIcon.classList.add('hidden');
-            hiddenInput.disabled = true;
-        } else {
-            selectedItems.add(id);
-            checkbox.classList.add('bg-merah-jcc', 'border-merah-jcc');
-            checkbox.classList.remove('border-charcoal/20');
-            checkIcon.classList.remove('hidden');
-            hiddenInput.disabled = false;
+        if (itemSearchClear) {
+            itemSearchClear.addEventListener('click', () => {
+                itemSearch.value = '';
+                applyItemFilter();
+                itemSearch.focus();
+            });
         }
 
-        renderCart();
-        updateSummary();
-    }
+        // === INIT ===
+        document.addEventListener('DOMContentLoaded', () => {
+            const monthSelector = document.getElementById('month-selector');
 
-    
-    // RENDER CART
-    
-    function renderCart() {
-        if (selectedItems.size === 0) {
-            itemCart.classList.add('hidden');
-            return;
-        }
+            // 1. Render initial calendar (current month)
+            renderCalendar(monthSelector.value);
+            document.getElementById('input-tanggal').value = selectedDate;
+            updateSummary();
+            renderCart();
 
-        itemCart.classList.remove('hidden');
-        cartCount.textContent = selectedItems.size;
+            // 2. Fetch room availability FIRST (this populates bookedDatesMemory)
+            fetch("{{ route('api.ruangan.availability', $ruangan->id_ruangan) }}")
+            .then(response => response.json())
+            .then(data => {
+                bookedDatesMemory = data.booked_dates || [];
+                
+                // Apply strikethrough to current month
+                document.querySelectorAll('.date-btn').forEach(btn => {
+                    if (bookedDatesMemory.includes(btn.dataset.date)) {
+                        btn.disabled = true;
+                        btn.classList.add('bg-gray-200', 'text-gray-400', 'opacity-50', 'cursor-not-allowed', 'line-through');
+                        btn.classList.remove('hover:bg-cream-dark', 'text-charcoal', 'ring-1', 'ring-merah-jcc', 'text-merah-jcc');
+                        btn.title = "Maaf, ruangan sudah dibooking pada tanggal ini!";
+                    }
+                });
 
-        const cartItems = allItemRows.filter(row => selectedItems.has(row.dataset.id));
+                // 3. Fetch item availability for today's date
+                fetchItemAvailability(selectedDate);
+            })
+            .catch(error => console.error('Error fetching availability:', error));
 
-        cartList.innerHTML = cartItems.map(row => `
-            <div class="flex items-center justify-between p-3 bg-merah-jcc/5 border border-merah-jcc/20 rounded-2xl">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-merah-jcc/15 text-merah-jcc flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-base">check</span>
-                    </div>
-                    <div>
-                        <h5 class="font-headline font-bold text-xs text-charcoal">${row.dataset.display}</h5>
-                        <p class="font-body text-[10px] text-secondary">
-                            ${row.dataset.jenisDisplay} • Rp ${Number(row.dataset.price).toLocaleString('id-ID')}/hari
-                        </p>
-                    </div>
-                </div>
-                <button type="button"
-                    class="cart-remove w-7 h-7 rounded-full hover:bg-merah-jcc/10 text-merah-jcc flex items-center justify-center transition-colors shrink-0"
-                    data-id="${row.dataset.id}">
-                    <span class="material-symbols-outlined text-base">close</span>
-                </button>
-            </div>
-        `).join('');
-
-        cartList.querySelectorAll('.cart-remove').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = btn.dataset.id;
-                const row = allItemRows.find(r => r.dataset.id === id);
-                if (row) toggleItem(row);
+            // 4. When user changes month
+            monthSelector.addEventListener('change', (e) => {
+                renderCalendar(e.target.value); // Draw the new month
+                
+                // Re-apply the strikethrough using the memory we saved!
+                document.querySelectorAll('.date-btn').forEach(btn => {
+                    if (bookedDatesMemory.includes(btn.dataset.date)) {
+                        btn.disabled = true;
+                        btn.classList.add('bg-gray-200', 'text-gray-400', 'opacity-50', 'cursor-not-allowed', 'line-through');
+                        btn.classList.remove('hover:bg-cream-dark', 'text-charcoal', 'ring-1', 'ring-merah-jcc', 'text-merah-jcc');
+                        btn.title = "Maaf, ruangan sudah dibooking pada tanggal ini!";
+                    }
+                });
             });
         });
-    }
-
-    
-    // FILTER / SEARCH
-    
-    function applyItemFilter() {
-        const query = (itemSearch?.value || '').trim().toLowerCase();
-        let visible = 0;
-
-        allItemRows.forEach(row => {
-            row.style.display = 'none';
-        });
-
-        let matchingRows;
-        if (query === '') {
-            matchingRows = allItemRows;
-        } else {
-            matchingRows = allItemRows
-                .map(row => {
-                    const name = row.dataset.name || '';
-                    const keywords = row.dataset.keywords || '';
-                    const jenis = row.dataset.jenis || '';
-                    let score = 0;
-                    if (name === query) score += 100;
-                    else if (name.startsWith(query)) score += 50;
-                    else if (name.includes(query)) score += 30;
-                    if (keywords.split(',').map(k => k.trim()).includes(query)) score += 40;
-                    else if (keywords.includes(query)) score += 20;
-                    if (jenis.includes(query)) score += 10;
-                    return { row, score };
-                })
-                .filter(item => item.score > 0)
-                .sort((a, b) => b.score - a.score)
-                .map(item => item.row);
-        }
-
-        matchingRows.slice(0, ITEM_LIMIT).forEach(row => {
-            row.style.display = 'flex';
-            visible++;
-        });
-
-        if (itemVisibleCount) itemVisibleCount.textContent = visible;
-        if (itemTotalCount) itemTotalCount.textContent = allItemRows.length;
-
-        if (itemNoResults) {
-            itemNoResults.classList.toggle('hidden', visible > 0);
-        }
-        if (itemSearchClear) {
-            itemSearchClear.classList.toggle('hidden', query === '');
-        }
-    }
-
-    
-    // UPDATE SUMMARY PANEL
-    
-    function updateSummary() {
-        // Date
-        document.getElementById('summary-date').textContent = selectedDateDisplay;
-
-        // Extras
-        const extrasContainer = document.getElementById('summary-extras');
-        let extrasHTML = '';
-        let totalExtras = 0;
-
-        selectedItems.forEach(id => {
-            const data = barangData[id];
-            if (!data) return;
-            extrasHTML += `<div>${data.name}</div>`;
-            totalExtras += data.price;
-        });
-
-        if (!extrasHTML) extrasHTML = '<div class="font-normal text-secondary">Tidak ada</div>';
-        extrasContainer.innerHTML = extrasHTML;
-
-        // Total
-        const grandTotal = roomPricePerDay + totalExtras;
-        document.getElementById('summary-total').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
-    }
-
-    
-    // STEPPER
-    
-    function goToStep(step) {
-        currentStep = step;
-
-        [1, 2, 3].forEach(i => {
-            document.getElementById(`step-content-${i}`).classList.toggle('hidden', i !== step);
-        });
-
-        const progressLine = document.getElementById('step-progress');
-        progressLine.style.width = step === 1 ? '0%' : step === 2 ? '50%' : '100%';
-
-        for (let i = 1; i <= 3; i++) {
-            const node = document.getElementById(`step-node-${i}`);
-            const label = document.getElementById(`step-label-${i}`);
-            if (i <= step) {
-                node.className = "w-10 h-10 rounded-full bg-merah-jcc text-broken-white font-headline font-bold flex items-center justify-center shadow-md transition-all";
-                label.className = "font-headline font-bold text-xs text-charcoal";
-            } else {
-                node.className = "w-10 h-10 rounded-full bg-broken-white border-2 border-charcoal/20 text-charcoal/60 font-headline font-bold flex items-center justify-center shadow-sm transition-all";
-                label.className = "font-headline font-bold text-xs text-charcoal/60";
-            }
-        }
-
-        if (step === 3) {
-            document.getElementById('review-event-title').textContent =
-                document.getElementById('input-event-title').value || '-';
-            document.getElementById('review-event-type').textContent =
-                document.getElementById('input-event-type').value || '-';
-            document.getElementById('review-kapasitas').textContent =
-                document.getElementById('input-kapasitas').value || '-';
-            document.getElementById('review-phone').textContent =
-                document.getElementById('input-phone').value || '-';
-        }
-
-        window.scrollTo({ top: 100, behavior: 'smooth' });
-    }
-
-    
-    // EVENT LISTENERS
-    
-    allItemRows.forEach(row => {
-        row.addEventListener('click', () => toggleItem(row));
-    });
-
-    if (itemSearch) {
-        itemSearch.addEventListener('input', applyItemFilter);
-    }
-
-    if (itemSearchClear) {
-        itemSearchClear.addEventListener('click', () => {
-            itemSearch.value = '';
-            applyItemFilter();
-            itemSearch.focus();
-        });
-    }
-
-    
-    // INIT
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('input-tanggal').value = selectedDate;
-        updateSummary();
-        applyItemFilter();
-        renderCart();
-    });
     </script>
 @endsection

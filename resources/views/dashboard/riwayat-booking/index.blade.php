@@ -31,6 +31,22 @@
             </button>
         </div>
 
+        <!-- ADMIN ONLY: Filter Pemesan -->
+        @if(in_array(auth()->user()->admin_role, ['admin_JCC', 'admin_Disporabudpar']))
+            <div class="reveal reveal-delay-1 flex items-center gap-3 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+                <!-- <span class="text-[10px] font-bold text-charcoal/40 uppercase tracking-widest shrink-0 mr-2">Tampilkan:</span> -->
+                <button data-owner="all" class="owner-chip active bg-charcoal text-broken-white px-4 py-2 rounded-full font-headline font-bold text-xs shrink-0 shadow-md">
+                    Semua Pemesan
+                </button>
+                <button data-owner="me" class="owner-chip bg-white border border-charcoal/10 text-charcoal hover:bg-charcoal/5 transition-colors px-4 py-2 rounded-full font-headline font-bold text-xs shrink-0">
+                    Milik Saya Sendiri
+                </button>
+                <button data-owner="users" class="owner-chip bg-white border border-charcoal/10 text-charcoal hover:bg-charcoal/5 transition-colors px-4 py-2 rounded-full font-headline font-bold text-xs shrink-0">
+                    Milik Pengguna Lain
+                </button>
+            </div>
+        @endif
+
         <!-- BOOKING CARDS GRID -->
         @if ($bookings->isEmpty())
             <div class="text-center py-20">
@@ -63,7 +79,7 @@
                     @endphp
 
                     <div data-status="{{ $booking->status_peminjaman }}"
-                         class="booking-card reveal bg-white border border-charcoal/5 rounded-[32px] p-3 sm:p-4 shadow-sm flex flex-col sm:flex-row gap-4 sm:gap-5 group relative overflow-hidden">
+                        data-owner-id="{{ $booking->user_id_user }}" class="booking-card reveal bg-white border border-charcoal/5 rounded-[32px] p-3 sm:p-4 shadow-sm flex flex-col sm:flex-row gap-4 sm:gap-5 group relative overflow-hidden">
 
                         <!-- Image & Badge -->
                         <div class="relative w-full sm:w-44 h-48 sm:h-44 shrink-0 rounded-[24px] overflow-hidden bg-charcoal/5">
@@ -86,6 +102,15 @@
                                     <h3 class="font-headline font-extrabold text-xl text-charcoal">
                                         {{ $booking->ruangan?->nama_ruangan ?? 'Ruangan tidak ditemukan' }}
                                     </h3>
+                                    
+                                    {{-- Show the user's name if the currently logged-in user is an admin --}}
+                                    @if(in_array(auth()->user()->admin_role, ['admin_JCC', 'admin_Disporabudpar']))
+                                        <p class="text-[11px] font-bold text-merah-jcc mt-1 flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[14px]">person</span>
+                                            Pemesan: {{ $booking->user->nama_user ?? 'Unknown' }}
+                                        </p>
+                                    @endif
+
                                     <p class="flex items-center gap-1 text-xs text-secondary mt-1">
                                         <span class="material-symbols-outlined text-[14px]">location_on</span>
                                         {{ $booking->ruangan?->lokasi_ruangan ?? '-' }}
@@ -142,25 +167,62 @@
     {{-- Filter functionality --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const chips = document.querySelectorAll('.filter-chip');
+            const statusChips = document.querySelectorAll('.filter-chip');
+            const ownerChips = document.querySelectorAll('.owner-chip');
             const cards = document.querySelectorAll('.booking-card');
+            
+            const currentUserId = "{{ auth()->id() }}";
+            let activeStatus = 'all';
+            let activeOwner = 'all';
 
-            chips.forEach(chip => {
+            function applyFilters() {
+                cards.forEach(card => {
+                    const statusMatch = (activeStatus === 'all' || card.dataset.status === activeStatus);
+                    
+                    let ownerMatch = true;
+                    if (activeOwner === 'me') {
+                        ownerMatch = (card.dataset.ownerId === currentUserId);
+                    } else if (activeOwner === 'users') {
+                        ownerMatch = (card.dataset.ownerId !== currentUserId);
+                    }
+
+                    if (statusMatch && ownerMatch) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            // Status Filter Listeners
+            statusChips.forEach(chip => {
                 chip.addEventListener('click', () => {
-                    const filter = chip.dataset.filter;
-
-                    // Toggle chip styles
-                    chips.forEach(c => {
+                    activeStatus = chip.dataset.filter;
+                    
+                    statusChips.forEach(c => {
                         c.classList.remove('active', 'bg-charcoal', 'text-broken-white', 'shadow-md');
                         c.classList.add('bg-merah-jcc/10', 'text-merah-jcc');
                     });
                     chip.classList.add('active', 'bg-charcoal', 'text-broken-white', 'shadow-md');
                     chip.classList.remove('bg-merah-jcc/10', 'text-merah-jcc');
+                    
+                    applyFilters();
+                });
+            });
 
-                    // Show/hide cards
-                    cards.forEach(card => {
-                        card.style.display = (filter === 'all' || card.dataset.status === filter) ? '' : 'none';
+            // Owner Filter Listeners (Admins only)
+            ownerChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    activeOwner = chip.dataset.owner;
+                    
+                    ownerChips.forEach(c => {
+                        c.classList.remove('active', 'bg-charcoal', 'text-broken-white', 'shadow-md');
+                        c.classList.add('bg-white', 'border', 'border-charcoal/10', 'text-charcoal', 'hover:bg-charcoal/5');
                     });
+                    chip.classList.add('active', 'bg-charcoal', 'text-broken-white', 'shadow-md');
+                    chip.classList.remove('bg-white', 'border', 'border-charcoal/10', 'text-charcoal', 'hover:bg-charcoal/5');
+                    
+                    applyFilters();
                 });
             });
         });

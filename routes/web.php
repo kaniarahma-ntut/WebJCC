@@ -8,6 +8,7 @@ use App\Http\Controllers\RuanganController;
 use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\BarangController;
 
+
 // Route::get('/', function () {
 //     return view('home');
 // })->name('home');
@@ -174,6 +175,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/konfirmasi/{id_ruangan}', [PeminjamanController::class, 'create'])->name('konfirmasi');
     
     Route::post('/peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');
+    
+    Route::get('/api/ruangan/{id}/availability', [PeminjamanController::class, 'getAvailability'])
+    ->name('api.ruangan.availability');
     
     Route::get('/dashboard/riwayat-booking', [PeminjamanController::class, 'riwayat'])
         ->name('riwayat-booking.index');

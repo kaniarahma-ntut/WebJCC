@@ -197,14 +197,29 @@
 
             @php
                 $userName = Auth::user()->nama_user ?? 'Pengguna';
+                
+                // 1. Check ADMIN role for the menus
+                $adminRole = Auth::user()->admin_role ?? 'none';
+                
+                // 2. Check USER role for the profile badge
                 $userRole = Auth::user()->user_role ?? 'user';
+                
                 $roleLabels = [
                     'komunitas' => 'Komunitas',
                     'tenant' => 'Tenant',
                     'talent' => 'Talent',
-                    'user' => 'Anggota',
+                    'user' => 'Pengguna Umum',
                 ];
-                $roleLabel = $roleLabels[$userRole] ?? 'Anggota';   
+                
+                // If they are an admin, show their admin title. If not, show their user title.
+                if ($adminRole === 'admin_JCC') {
+                    $roleLabel = 'Admin JCC';
+                } elseif ($adminRole === 'admin_disporabudpar') {
+                    $roleLabel = 'Admin Disporabudpar';
+                } else {
+                    $roleLabel = $roleLabels[$userRole] ?? 'Anggota';
+                }
+
                 $nameParts = preg_split('/\s+/', trim($userName));
                 $initials = mb_strtoupper(mb_substr($nameParts[0] ?? '', 0, 1) . mb_substr($nameParts[1] ?? '', 0, 1));
                 if ($initials === '') {
@@ -267,7 +282,7 @@
                         @endif
                     </a>
 
-                    @if ($userRole === 'admin_JCC')
+                    @if ($adminRole === 'admin_JCC')
                         <!-- Manajemen Ruangan -->
                         <a href="/dashboard/manajemen-ruangan"
                             class="nav-link flex items-center gap-3 px-4 py-3 rounded-2xl transition-all {{ request()->is('dashboard/manajemen-ruangan*') ? 'bg-merah-jcc text-broken-white shadow-lg shadow-merah-jcc/25' : 'text-charcoal/70 hover:bg-charcoal/5 hover:text-merah-jcc' }}">
@@ -320,7 +335,7 @@
                         </a>
 
                         
-                    @elseif ($userRole === 'admin_Disporabudpar')
+                    @elseif ($adminRole === 'admin_Disporabudpar')
                         <!-- Terima Pemesanan -->
                         <a href="/dashboard/terima-pemesanan"
                             class="nav-link flex items-center gap-3 px-4 py-3 rounded-2xl transition-all {{ request()->is('dashboard/terima-pemesanan*') ? 'bg-merah-jcc text-broken-white shadow-lg shadow-merah-jcc/25' : 'text-charcoal/70 hover:bg-charcoal/5 hover:text-merah-jcc' }}">

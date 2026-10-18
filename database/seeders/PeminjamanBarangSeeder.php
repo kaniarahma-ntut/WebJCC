@@ -15,10 +15,10 @@ class PeminjamanBarangSeeder extends Seeder
     {
         DB::table('peminjaman_barang')->insert([
             [
-                'start_time'    => '2024-06-01 08:00:00',
-                'end_time'      => '2024-06-01 23:59:00',
-                'created_at'      => '2024-06-01 08:00:00',
-                'updated_at'      => '2024-06-01 08:00:00',
+                'start_time'      => '2026-10-20 08:00:00',
+                'end_time'      => '2026-10-20 23:00:00',
+                'created_at'      => '2026-10-20 08:00:00',
+                'updated_at'      => '2026-10-20 08:00:00',
                 'barang_id_barang'=> '1',
             ],
         ]);

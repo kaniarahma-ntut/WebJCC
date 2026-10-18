@@ -15,8 +15,8 @@ class DetailPeminjamanBarangSeeder extends Seeder
     {
         DB::table('detail_peminjaman_barang')->insert([
             [
-                'created_at'      => '2024-06-01 08:00:00',
-                'updated_at'      => '2024-06-01 08:00:00',
+                'created_at'      => '2026-10-20 08:00:00',
+                'updated_at'      => '2026-10-20 08:00:00',
                 'id_peminjaman_ruangan'=> '1',
                 'id_peminjaman_barang'=> '1',
             ],
