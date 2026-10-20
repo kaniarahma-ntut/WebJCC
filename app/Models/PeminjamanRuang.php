@@ -24,15 +24,18 @@ class PeminjamanRuang extends Model
         'status_pembayaran',
         'catatan_admin',
         'surat_peminjaman',  
+        'file_pendukung',  
         'total_harga',
         'user_id_user',
         'ruangan_id_ruangan',
+        'batas_pembayaran',
     ];
 
     protected $casts = [
         'kapasitas'  => 'integer',
         'start_time' => 'datetime',
         'end_time'   => 'datetime',
+        'batas_pembayaran' => 'datetime',
     ];
 
     // Relasi ke User (Siapa yang meminjam)

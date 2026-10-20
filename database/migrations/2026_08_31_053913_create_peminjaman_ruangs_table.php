@@ -34,9 +34,11 @@ return new class extends Migration
                     'failed'
                 ])->default('pending');    
             $table->integer('total_harga');
-            
+            $table->string('snap_token')->nullable();
+            $table->timestamp('batas_pembayaran')->nullable();
             $table->text('catatan_admin')->nullable();
             $table->string('surat_peminjaman')->nullable();
+            $table->string('file_pendukung')->nullable();
             
             $table->unsignedBigInteger('user_id_user');
             $table->unsignedBigInteger('ruangan_id_ruangan');

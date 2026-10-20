@@ -313,16 +313,31 @@
                             @endif
                         </a>
 
-                        <!-- Manajemen Booking -->
-                        <a href="/dashboard/riwayat-booking"
-                            class="nav-link flex items-center gap-3 px-4 py-3 rounded-2xl transition-all {{ request()->is('dashboard/riwayat-booking*') ? 'bg-merah-jcc text-broken-white shadow-lg shadow-merah-jcc/25' : 'text-charcoal/70 hover:bg-charcoal/5 hover:text-merah-jcc' }}">
-                            <span class="material-symbols-outlined text-lg"
-                                {!! request()->is('dashboard/riwayat-booking*') ? 'style="font-variation-settings: \'FILL\' 1;"' : '' !!}>calendar_month</span>
-                            <span class="sidebar-label flex-1">Manajemen Booking</span>
-                            @if (request()->is('dashboard/riwayat-booking*'))
-                                <span class="sidebar-badge w-1.5 h-1.5 rounded-full bg-broken-white"></span>
-                            @endif
-                        </a>
+                        <!-- Manajemen Booking (Dropdown) -->
+                        <div x-data="{ open: {{ request()->is('dashboard/riwayat-booking*') || request()->is('dashboard/terima-pemesanan*') ? 'true' : 'false' }} }">
+                            <button @click="open = !open" 
+                                class="nav-link w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl transition-all {{ request()->is('dashboard/riwayat-booking*') || request()->is('dashboard/terima-pemesanan*') ? 'bg-merah-jcc text-broken-white shadow-lg shadow-merah-jcc/25' : 'text-charcoal/70 hover:bg-charcoal/5 hover:text-merah-jcc' }}">
+                                <div class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-lg" {!! request()->is('dashboard/riwayat-booking*') || request()->is('dashboard/terima-pemesanan*') ? 'style="font-variation-settings: \'FILL\' 1;"' : '' !!}>calendar_month</span>
+                                    <span class="sidebar-label flex-1 text-left">Manajemen Booking</span>
+                                </div>
+                                <span class="material-symbols-outlined text-sm transition-transform duration-200" :class="{'rotate-180': open}">expand_more</span>
+                            </button>
+
+                            <!-- Sub-menu -->
+                            <div x-show="open" x-collapse class="space-y-1 mt-1 ml-4 pl-4 border-l-2 border-charcoal/10">
+                                <a href="/dashboard/riwayat-booking"
+                                    class="flex items-center gap-2 px-3 py-2 rounded-xl transition-all text-[11px] {{ request()->is('dashboard/riwayat-booking*') ? 'text-merah-jcc font-bold' : 'text-charcoal/60 hover:text-merah-jcc' }}">
+                                    <span class="material-symbols-outlined text-[14px]">list_alt</span>
+                                    Semua Riwayat
+                                </a>
+                                <a href="/dashboard/terima-pemesanan"
+                                    class="flex items-center gap-2 px-3 py-2 rounded-xl transition-all text-[11px] {{ request()->is('dashboard/terima-pemesanan*') ? 'text-merah-jcc font-bold' : 'text-charcoal/60 hover:text-merah-jcc' }}">
+                                    <span class="material-symbols-outlined text-[14px]">fact_check</span>
+                                    Review Pemesanan
+                                </a>
+                            </div>
+                        </div>
 
                         <!-- Manajemen Artikel -->
                         <a href="/dashboard/manajemen-artikel"
@@ -336,11 +351,11 @@
 
                         
                     @elseif ($adminRole === 'admin_Disporabudpar')
-                        <!-- Terima Pemesanan -->
+                        <!-- Terima Pemesanan (JCC) -->
                         <a href="/dashboard/terima-pemesanan"
                             class="nav-link flex items-center gap-3 px-4 py-3 rounded-2xl transition-all {{ request()->is('dashboard/terima-pemesanan*') ? 'bg-merah-jcc text-broken-white shadow-lg shadow-merah-jcc/25' : 'text-charcoal/70 hover:bg-charcoal/5 hover:text-merah-jcc' }}">
                             <span class="material-symbols-outlined text-lg" {!! request()->is('dashboard/terima-pemesanan*') ? 'style="font-variation-settings: \'FILL\' 1;"' : '' !!}>task_alt</span>
-                            <span class="sidebar-label flex-1">Terima Pemesanan</span>
+                            <span class="sidebar-label flex-1">Review Pemesanan</span>
                             @if (request()->is('dashboard/terima-pemesanan*'))
                                 <span class="sidebar-badge w-1.5 h-1.5 rounded-full bg-broken-white"></span>
                             @endif

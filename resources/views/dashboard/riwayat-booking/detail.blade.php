@@ -1,5 +1,9 @@
 @extends('dashboard.layouts.app')
 
+<script type="text/javascript"
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+
 @section('title', 'Detail Booking - JCC')
 
 @section('dashboard-content')
@@ -85,14 +89,16 @@
                     </span>
                 </div>
                 <p class="font-body text-secondary text-sm md:text-base mt-2 max-w-2xl">
-                    @if ($booking->status_peminjaman === 'pending')
-                        Permintaan pemesanan Anda telah berhasil dikirim dan saat ini sedang ditinjau oleh tim administrasi kami.
-                    @elseif ($booking->status_peminjaman === 'approved')
-                        Pemesanan Anda telah disetujui. Silakan periksa dokumen dan tiket di bawah.
-                    @else
-                        Pemesanan Anda ditolak. Silakan hubungi tim dukungan untuk informasi lebih lanjut.
-                    @endif
                 </p>
+                @if ($booking->catatan_admin)
+                    <div class="reveal revealed mt-4 bg-amber-50 border border-amber-500/30 rounded-2xl p-4 flex items-start gap-3">
+                        <span class="material-symbols-outlined text-amber-600">info</span>
+                        <div>
+                            <h4 class="font-headline font-bold text-sm text-amber-700">Catatan dari Admin</h4>
+                            <p class="text-xs text-amber-600 mt-1">{{ $booking->catatan_admin }}</p>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -210,7 +216,6 @@
                                     Pemesan: {{ $booking->user->nama_user ?? 'Unknown' }} ({{ $booking->user->email ?? '-' }})
                                 </p>
                             @endif
-                            
                         </div>
                         <div class="bg-charcoal/5 p-2 rounded-xl text-charcoal/50">
                             <span class="material-symbols-outlined">receipt_long</span>
@@ -275,6 +280,20 @@
                                 <p class="font-headline font-bold text-base text-charcoal">{{ $booking->noHP_CP }}</p>
                             </div>
                         </div>
+                        <!-- File Pendukung -->
+                        @if ($booking->file_pendukung)
+                            <div class="flex gap-4">
+                                <div class="w-11 h-11 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-outlined">attach_file</span>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] font-bold text-secondary/60 uppercase tracking-widest mb-0.5">File Pendukung</p>
+                                    <a href="{{ asset('storage/' . $booking->file_pendukung) }}" target="_blank" class="text-sm font-headline font-bold text-merah-jcc hover:underline">
+                                        Lihat Dokumen (PDF/DOCX)
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -335,6 +354,39 @@
                         <h4 class="font-headline font-extrabold text-3xl text-merah-jcc">
                             Rp {{ number_format($grandTotal, 0, ',', '.') }}
                         </h4>
+                        @if ($booking->status_peminjaman === 'approved' && $booking->status_pembayaran === 'pending')
+                            @php
+                                $isExpired = $booking->batas_pembayaran && now()->greaterThan($booking->batas_pembayaran);
+                                // Check if the person viewing this is an Admin
+                                $isAdmin = in_array(auth()->user()->admin_role, ['admin_JCC', 'admin_Disporabudpar']);
+                            @endphp
+
+                            <div class="mt-6 p-4 {{ $isExpired ? 'bg-red-50 border-red-500/30' : 'bg-amber-50 border-amber-500/30' }} border rounded-2xl">
+                                
+                                @if ($isExpired)
+                                    <p class="text-xs text-red-700 font-bold mb-3 text-center">
+                                        Waktu pembayaran telah habis. Silakan hubungi admin.
+                                    </p>
+                                @else
+                                    <div class="flex items-center justify-between mb-3">
+                                        <p class="text-xs text-amber-700 font-bold">Sisa waktu pembayaran:</p>
+                                        <!-- Countdown Timer -->
+                                        <div id="countdown" class="font-mono font-bold text-sm text-red-600 bg-white/50 px-2 py-1 rounded" data-deadline="{{ $booking->batas_pembayaran ? $booking->batas_pembayaran->toIso8601String() : '' }}"></div>
+                                    </div>
+
+                                    {{-- ONLY show the actual Pay button to the User. Admins see a grey info box. --}}
+                                    @if(!$isAdmin)
+                                        <button type="button" id="pay-button" class="w-full bg-merah-jcc text-broken-white py-3 rounded-full font-headline font-bold text-xs shadow-lg shadow-merah-jcc/25 hover:bg-rose-700 transition-all">
+                                            Bayar Sekarang
+                                        </button>
+                                    @else
+                                        <div class="w-full bg-gray-200 text-gray-500 py-3 rounded-full font-headline font-bold text-xs text-center border border-gray-300 cursor-not-allowed">
+                                            Menunggu Pembayaran User
+                                        </div>
+                                    @endif
+                                @endif
+                            </div>
+                        @endif
                         <p class="text-[10px] text-secondary mt-1">
                             Status Pembayaran: {{ $payment['label'] }}
                         </p>
@@ -345,20 +397,17 @@
         </div>
 
         <!-- SECTION 3: SURAT PEMINJAMAN (only if approved) -->
-        @if ($booking->status_peminjaman === 'approved')
+        @if ($booking->status_peminjaman === 'approved' && $booking->surat_peminjaman)
             <div class="reveal reveal-delay-4 bg-white border border-charcoal/10 rounded-[32px] p-4 md:p-6 shadow-sm flex flex-col h-[600px]">
                 <div class="flex items-center justify-between px-2 mb-4">
                     <h2 class="font-headline font-bold text-lg text-charcoal flex items-center gap-2">
                         <span class="material-symbols-outlined text-merah-jcc text-xl">description</span>
                         Dokumen Surat Peminjaman
                     </h2>
+                    <a href="{{ asset('storage/' . $booking->surat_peminjaman) }}" download class="text-xs font-bold text-merah-jcc hover:underline">Download</a>
                 </div>
-
                 <div class="flex-1 rounded-[24px] overflow-hidden border border-charcoal/10 bg-cream-dark relative shadow-inner">
-                    <div class="absolute inset-0 flex flex-col items-center justify-center text-charcoal/40 font-body text-xs z-0">
-                        <span class="material-symbols-outlined text-3xl mb-2">description</span>
-                        Dokumen akan diunggah oleh admin setelah disetujui.
-                    </div>
+                    <iframe src="{{ asset('storage/' . $booking->surat_peminjaman) }}" class="w-full h-full"></iframe>
                 </div>
             </div>
         @endif
@@ -380,4 +429,74 @@
         </div>
 
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const payButton = document.getElementById('pay-button');
+            if(payButton) {
+                payButton.addEventListener('click', function () {
+                    // Call our Laravel route to get the Snap Token
+                    fetch("{{ route('peminjaman.pay', $booking->id_peminjaman_ruangan) }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.snap_token) {
+                            // Open the Midtrans payment popup
+                            window.snap.pay(data.snap_token, {
+                                onSuccess: function(result){
+                                    alert("Pembayaran berhasil!"); 
+                                    window.location.reload(); 
+                                },
+                                onPending: function(result){
+                                    alert("Menunggu pembayaran Anda!");
+                                    window.location.reload();
+                                },
+                                onError: function(result){
+                                    alert("Pembayaran gagal!");
+                                }
+                            });
+                        } else {
+                            alert(data.error || 'Gagal membuat token pembayaran.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan.');
+                    });
+                });
+            }
+        });
+
+        // === COUNTDOWN TIMER ===
+        const countdownEl = document.getElementById('countdown');
+        if (countdownEl) {
+            const deadline = countdownEl.getAttribute('data-deadline');
+            
+            if (deadline) {
+                const deadlineTime = new Date(deadline).getTime();
+
+                const updateTimer = setInterval(function () {
+                    const now = new Date().getTime();
+                    const distance = deadlineTime - now;
+
+                    if (distance < 0) {
+                        clearInterval(updateTimer);
+                        countdownEl.innerHTML = "WAKTU HABIS";
+                        // Optionally, reload page to hide the pay button
+                        // location.reload(); 
+                    } else {
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                        countdownEl.innerHTML = hours + "j " + minutes + "m " + seconds + "d";
+                    }
+                }, 1000);
+            }
+        }
+    </script>
 @endsection

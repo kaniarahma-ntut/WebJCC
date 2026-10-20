@@ -4,10 +4,10 @@
 
 @section('dashboard-content')
     @php
-        $userRole = Auth::user()->user_role ?? 'user';
+        $adminRole = Auth::user()->admin_role ?? 'none';
     @endphp
 
-    @if ($userRole === 'admin_JCC')
+    @if ($adminRole === 'admin_JCC')
         <!-- ================= DASHBOARD ADMIN JCC ================= -->
         <div class="max-w-6xl mx-auto space-y-6 md:space-y-8 pb-12">
 
@@ -60,7 +60,7 @@
                             class="text-[10px] font-bold text-charcoal/50 bg-charcoal/5 px-2 py-1 rounded-full">Total</span>
                     </div>
                     <h3 class="font-headline font-extrabold text-2xl md:text-3xl text-charcoal mt-3 counter"
-                        data-target="6">0
+                        data-target="{{ $totalRuangan }}">0
                     </h3>
                     <span class="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-wider">Ruangan
                         Aktif</span>
@@ -73,11 +73,10 @@
                             class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
                             <span class="material-symbols-outlined text-xl">group</span>
                         </div>
-                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-full">+4
-                            minggu ini</span>
+                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-full">User</span>
                     </div>
                     <h3 class="font-headline font-extrabold text-2xl md:text-3xl text-charcoal mt-3 counter"
-                        data-target="48">0
+                        data-target="{{ $totalPengguna }}">0
                     </h3>
                     <span class="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-wider">Total
                         Pengguna</span>
@@ -94,7 +93,7 @@
                             Aksi</span>
                     </div>
                     <h3 class="font-headline font-extrabold text-2xl md:text-3xl text-charcoal mt-3 counter"
-                        data-target="12">0
+                        data-target="{{ $pendingApprovals }}">0
                     </h3>
                     <span class="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-wider">Booking
                         Masuk</span>
@@ -111,7 +110,7 @@
                             class="text-[10px] font-bold text-merah-jcc bg-merah-jcc/10 px-2 py-1 rounded-full">Live</span>
                     </div>
                     <h3 class="font-headline font-extrabold text-2xl md:text-3xl text-charcoal mt-3 counter"
-                        data-target="5">0
+                        data-target="{{ $totalEvents }}">0
                     </h3>
                     <span class="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-wider">Acara
                         Berjalan</span>
@@ -430,7 +429,7 @@
                             minggu ini</span>
                     </div>
                     <h3 class="font-headline font-extrabold text-2xl md:text-3xl text-charcoal mt-3 counter"
-                        data-target="2">0
+                        data-target="{{ $myActiveBookings }}">0
                     </h3>
                     <span class="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-wider">Booking
                         Aktif</span>
@@ -447,7 +446,7 @@
                             class="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-full">+4</span>
                     </div>
                     <h3 class="font-headline font-extrabold text-2xl md:text-3xl text-charcoal mt-3 counter"
-                        data-target="14">0
+                        data-target="{{ $myCompletedBookings }}">0
                     </h3>
                     <span
                         class="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-wider">Selesai</span>
@@ -464,7 +463,7 @@
                             class="text-[10px] font-bold text-amber-600 bg-amber-500/10 px-2 py-1 rounded-full">Segera</span>
                     </div>
                     <h3 class="font-headline font-extrabold text-2xl md:text-3xl text-charcoal mt-3 counter"
-                        data-target="1">0
+                        data-target="{{ $myPendingPayment }}">0
                     </h3>
                     <span class="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-wider">Menunggu
                         Bayar</span>
@@ -481,11 +480,9 @@
                             class="text-[10px] font-bold text-charcoal/50 bg-charcoal/5 px-2 py-1 rounded-full">Total</span>
                     </div>
                     <h3 class="font-headline font-extrabold text-2xl md:text-3xl text-charcoal mt-3">
-                        <span class="counter" data-target="48">0</span><span class="text-sm text-secondary font-normal">
-                            jam</span>
+                        <span class="counter" data-target="{{ $myTotalBookings }}">0</span><span class="text-sm text-secondary font-normal"> kali</span>
                     </h3>
-                    <span class="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-wider">Total
-                        Jam Sewa</span>
+                    <span class="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-wider">Total Booking</span>
                 </div>
             </div>
 

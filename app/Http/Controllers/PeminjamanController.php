@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 
 class PeminjamanController extends Controller
 {
+
+
     public function index()
     {
 
@@ -47,10 +49,19 @@ class PeminjamanController extends Controller
             'noHP_CP'            => 'required|string|max:15',
             'barang_ids'         => 'nullable|array',
             'barang_ids.*'       => 'exists:barang,id_barang',
+            'file_pendukung'     => 'required|file|mimes:pdf,doc,docx|max:5120',
+
+
         ]);
+
+        $filePath = null;
+        if ($request->hasFile('file_pendukung')) {
+            $filePath = $request->file('file_pendukung')->store('file-pendukung', 'public');
+        }
 
         // 2. Fetch the room FIRST
         $ruangan = Ruangan::findOrFail($validated['ruangan_id_ruangan']);
+                // Handle file upload BEFORE creating the booking
 
         // 3. Calculate duration + total
         $start = \Carbon\Carbon::parse($validated['tanggal'] . ' 09:00:00');
@@ -96,6 +107,7 @@ class PeminjamanController extends Controller
             'total_harga'         => $totalHarga,
             'user_id_user'        => Auth::id(),
             'ruangan_id_ruangan'  => $ruangan->id_ruangan,
+            'file_pendukung'      => $filePath,
         ]);
 
         // 5. Save items (if any)
@@ -200,5 +212,95 @@ class PeminjamanController extends Controller
             'booked_dates' => $bookedDates,
             'booked_barang_ids' => $bookedBarangIds
         ]);
+    }
+
+
+    public function pay($id)
+    {
+        $booking = PeminjamanRuang::where('user_id_user', Auth::id())->findOrFail($id);
+
+
+        if ($booking->batas_pembayaran && now()->greaterThan($booking->batas_pembayaran)) {
+            // Optional: change status to failed automatically
+            $booking->update(['status_pembayaran' => 'failed']);
+            
+            return response()->json([
+                'error' => 'Waktu pembayaran telah habis (melebihi 6 jam). Silakan hubungi admin.'
+            ], 403);
+        }
+
+        // 1. Configure Midtrans
+        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+        \Midtrans\Config::$isProduction = config('services.midtrans.is_production');
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+
+        // 2. Prepare the transaction details
+        // Midtrans requires a unique order_id. We'll prefix our booking ID.
+        $orderId = 'JCC-' . $booking->id_peminjaman_ruangan . '-' . time();
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $booking->total_harga, // Midtrans uses integer for IDR
+            ],
+            'customer_details' => [
+                'first_name' => Auth::user()->nama_user,
+                'email' => Auth::user()->email,
+                'phone' => $booking->noHP_CP,
+            ],
+        ];
+
+        try {
+            // 3. Get Snap Token from Midtrans
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+            // 4. Save the token so the frontend can use it
+            $booking->update(['snap_token' => $snapToken]);
+
+            return response()->json(['snap_token' => $snapToken]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function callback(Request $request)
+    {
+        \Illuminate\Support\Facades\Log::info('Midtrans Callback Hit!', $request->all());
+        // 1. Verify the signature to ensure it's really from Midtrans
+        $serverKey = config('services.midtrans.server_key');
+        $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
+
+        if ($hashed !== $request->signature_key) {
+            return response()->json(['message' => 'Invalid signature'], 403);
+        }
+
+        // 2. Extract the Booking ID from the Order ID
+        // Our order ID format is: JCC-{id}-{timestamp}
+        $orderIdParts = explode('-', $request->order_id);
+        $bookingId = $orderIdParts[1] ?? null;
+
+        $booking = PeminjamanRuang::find($bookingId);
+
+        if (!$booking) {
+            return response()->json(['message' => 'Booking not found'], 404);
+        }
+
+        // 3. Update the payment status based on Midtrans transaction status
+        $transactionStatus = $request->transaction_status;
+        $fraudStatus = $request->fraud_status;
+
+        if ($transactionStatus == 'capture') {
+            if ($fraudStatus == 'accept') {
+                $booking->update(['status_pembayaran' => 'completed']);
+            }
+        } elseif ($transactionStatus == 'settlement') {
+            $booking->update(['status_pembayaran' => 'completed']);
+        } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
+            $booking->update(['status_pembayaran' => 'failed']);
+        }
+
+        // 4. Always return 200 OK so Midtrans stops retrying
+        return response()->json(['message' => 'Callback received']);
     }
 }

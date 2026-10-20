@@ -3,8 +3,6 @@
 @section('title', 'Konfirmasi Booking')
 
 @section('content')
-
-
     <div class="pt-28 pb-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
 
         <!-- Title Page Header -->
@@ -49,7 +47,7 @@
 
             <!-- LEFT COLUMN: Form -->
             <div class="lg:col-span-7">
-                <form id="booking-form" method="POST" action="{{ route('peminjaman.store') }}" novalidate>
+                <form id="booking-form" enctype="multipart/form-data" method="POST" action="{{ route('peminjaman.store') }}" novalidate>
                         @if ($errors->any())
                         <div class="mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl p-5">
                             <div class="flex items-start gap-3">
@@ -239,6 +237,15 @@
                             <input type="text" name="noHP_CP" id="input-phone" 
                                 placeholder="Nomor WhatsApp (cth. 08123456789)"
                                 class="w-full bg-broken-white border border-charcoal/10 rounded-2xl px-5 py-3.5 text-sm text-charcoal focus:outline-none focus:border-merah-jcc transition-all" />
+
+                            <!-- File Pendukung (Proposal / Rundown) -->
+                            <div class="mt-4">
+                                <label class="block text-xs font-bold text-charcoal mb-2">File Pendukung (Proposal / Rundown)</label>
+                                <input type="file" name="file_pendukung" accept=".pdf,.doc,.docx" required
+                                    class="w-full bg-broken-white border border-charcoal/10 rounded-2xl px-5 py-3 text-sm text-charcoal focus:outline-none focus:border-merah-jcc transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-merah-jcc/10 file:text-merah-jcc hover:file:bg-merah-jcc/20" />
+                                <p class="text-[10px] text-secondary mt-1">Format: PDF, DOC, DOCX (Maks. 5MB). Wajib diisi.</p>
+                            </div>
+
                         </div>
 
                         <div class="flex items-center gap-4 pt-2">
@@ -299,7 +306,7 @@
                             </button>
                             <button type="submit"
                                 class="w-2/3 bg-merah-jcc hover:bg-merah-jcc/90 text-broken-white py-4 rounded-full font-headline font-bold text-sm tracking-wider shadow-lg transition-all flex items-center justify-center gap-2">
-                                Konfirmasi & Bayar
+                                Konfirmasi
                                 <span class="material-symbols-outlined text-base">check_circle</span>
                             </button>
                         </div>
